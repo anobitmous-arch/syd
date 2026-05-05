@@ -1,0 +1,57 @@
+name: bertcrypto
+
+services:
+  syd_postgres:
+    image: postgres:15
+    container_name: syd_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: syd_user
+      POSTGRES_PASSWORD: syd_password
+      POSTGRES_DB: syd_campus
+    volumes:
+      - syd_pgdata:/var/lib/postgresql/data
+      - ./syd-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - bertcrypto_net
+
+  web:
+    build: .
+    container_name: bertcrypto
+    restart: unless-stopped
+    depends_on:
+      - syd_postgres
+    environment:
+      - PORT=5177
+      - SYD_DATABASE_URL=postgresql://syd_user:syd_password@syd_postgres:5432/syd_campus
+      - SYD_JWT_SECRET=ea69bbf5c04b162dfe21dbacb237eaed5c4c0c1fb9837792bed887321d9457c8cdf801ae761ec97d8c3585aaf546b7f14bd8861dd1cf013ed919537759257d75
+      - SYD_NEWS_SECRET=1bfdc3011278d1a1c30fcced4400328580b0235b3742239d85d16132297f4fe0
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - traefik-proxy
+      - bertcrypto_net
+    labels:
+      - "traefik.enable=true"
+
+      # HTTPS
+      - "traefik.http.routers.bertcrypto.rule=Host(`www.bertcrypto.com`) || Host(`bertcrypto.com`)"
+      - "traefik.http.routers.bertcrypto.entrypoints=websecure"
+      - "traefik.http.routers.bertcrypto.tls=true"
+      - "traefik.http.routers.bertcrypto.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bertcrypto.loadbalancer.server.port=5177"
+      - "traefik.docker.network=traefik-proxy"
+
+      # HTTP -> HTTPS
+      - "traefik.http.routers.bertcrypto-http.rule=Host(`www.bertcrypto.com`) || Host(`bertcrypto.com`)"
+      - "traefik.http.routers.bertcrypto-http.entrypoints=web"
+      - "traefik.http.routers.bertcrypto-http.middlewares=redirect-to-https@file"
+
+volumes:
+  syd_pgdata:
+
+networks:
+  traefik-proxy:
+    external: true
+  bertcrypto_net:
+    driver: bridge

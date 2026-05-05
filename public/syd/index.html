@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeedYourDreams — Tu compañero financiero diario</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+  /* NAV */
+  nav{border-bottom:1px solid var(--border);padding:16px 0}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:1.1rem;font-weight:700;letter-spacing:-.5px}
+  .logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:16px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.9rem;transition:color .2s}
+  .nav-link:hover{color:var(--text)}
+  .btn-nav{background:var(--green);color:#070d12;padding:7px 18px;border-radius:6px;font-weight:600;font-size:.9rem}
+
+  /* HERO */
+  .hero{padding:80px 0 60px;text-align:center}
+  .eyebrow{display:inline-flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px}
+  .tag{display:inline-block;border:1px solid;border-radius:4px;padding:3px 10px;font-size:.75rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  .tag-orange{border-color:rgba(255,159,67,.3);color:var(--orange)}
+  .tag-green{border-color:rgba(46,229,157,.3);color:var(--green)}
+  h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:20px}
+  h1 span{color:var(--orange)}
+  .hero-sub{color:var(--muted);font-size:1.1rem;max-width:560px;margin:0 auto 36px;line-height:1.6}
+  .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:12px 28px;border-radius:8px;font-weight:700;font-size:.95rem;cursor:pointer;transition:opacity .2s}
+  .btn:hover{opacity:.85}
+  .btn-primary{background:var(--orange);color:#070d12}
+  .btn-ghost{border:1px solid var(--border);color:var(--text)}
+  .mantra{margin-top:40px;padding:20px;border:1px solid var(--border);border-radius:10px;max-width:600px;margin-left:auto;margin-right:auto;color:var(--muted);font-style:italic;font-size:.95rem;line-height:1.6}
+  .mantra strong{color:var(--text)}
+
+  /* POLES */
+  .poles-section{padding:60px 0}
+  .section-title{font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:8px}
+  .section-sub{color:var(--muted);text-align:center;margin-bottom:40px}
+  .poles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .pole-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,transform .2s}
+  .pole-card:hover{transform:translateY(-3px)}
+  .pole-icon{font-size:2rem;margin-bottom:12px}
+  .pole-name{font-weight:700;font-size:1rem;margin-bottom:4px}
+  .pole-desc{color:var(--muted);font-size:.85rem}
+  .pole-card[data-pole="1"]{border-top:3px solid var(--green)}
+  .pole-card[data-pole="2"]{border-top:3px solid var(--blue)}
+  .pole-card[data-pole="3"]{border-top:3px solid var(--orange)}
+  .pole-card[data-pole="4"]{border-top:3px solid var(--purple)}
+
+  /* HOW IT WORKS */
+  .how-section{padding:60px 0;border-top:1px solid var(--border)}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;margin-top:36px}
+  .step{text-align:center}
+  .step-num{width:36px;height:36px;border-radius:50%;background:var(--orange);color:#070d12;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .step-title{font-weight:600;margin-bottom:6px}
+  .step-desc{color:var(--muted);font-size:.85rem;line-height:1.5}
+
+  /* CTA BOTTOM */
+  .cta-bottom{padding:60px 0;text-align:center;border-top:1px solid var(--border)}
+  .cta-bottom h2{font-size:1.8rem;margin-bottom:12px}
+  .cta-bottom p{color:var(--muted);margin-bottom:28px}
+
+  footer{border-top:1px solid var(--border);padding:24px 0;text-align:center;color:var(--muted);font-size:.85rem}
+  footer a{color:var(--muted)}
+  footer a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="nav-inner">
+      <div class="logo"><a href="/"><span>Bert</span>Crypto</a> <span style="color:var(--muted);font-weight:400;font-size:.9rem">/ SYD</span></div>
+      <div class="nav-links">
+        <a class="nav-link" href="/syd/login.html">Iniciar sesión</a>
+        <a class="btn-nav btn" href="/syd/register.html">Registrarme</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="tag tag-orange">Comunidad abierta</span>
+      <span class="tag tag-green">Acceso gratuito</span>
+    </div>
+    <h1>Entiende el dinero.<br/>Un poco <span>cada día</span>.</h1>
+    <p class="hero-sub">
+      SeedYourDreams es tu compañero financiero diario. Noticias que importan,
+      predicciones de mercado y aprendizaje progresivo — sin jerga, sin presión.
+    </p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="/syd/register.html">Empezar ahora</a>
+      <a class="btn btn-ghost" href="/syd/login.html">Ya tengo cuenta</a>
+    </div>
+    <div class="mantra">
+      "El dinero es una herramienta. Entenderlo con
+      <strong>disciplina</strong>, <strong>humildad</strong> y <strong>criterio</strong>
+      es la diferencia entre que te controle o que tú lo controles."
+      <br/><span style="font-size:.8rem;margin-top:6px;display:block">— Principio fundacional de SeedYourDreams</span>
+    </div>
+  </div>
+</section>
+
+<section class="poles-section">
+  <div class="wrap">
+    <h2 class="section-title">Cuatro caminos. Un objetivo.</h2>
+    <p class="section-sub">Responde unas preguntas y descubrirás cuál encaja con tu situación y tus metas reales.</p>
+    <div class="poles-grid">
+      <div class="pole-card" data-pole="1">
+        <div class="pole-icon">🦙</div>
+        <div class="pole-name" style="color:var(--green)">Norte</div>
+        <div class="pole-desc">Ahorro & Bases — Para quienes quieren controlar sus finanzas y construir desde cero.</div>
+      </div>
+      <div class="pole-card" data-pole="2">
+        <div class="pole-icon">🦅</div>
+        <div class="pole-name" style="color:var(--blue)">Sur</div>
+        <div class="pole-desc">Inversión & Crecimiento — Para quienes quieren que su dinero trabaje a largo plazo.</div>
+      </div>
+      <div class="pole-card" data-pole="3">
+        <div class="pole-icon">🐯</div>
+        <div class="pole-name" style="color:var(--orange)">Este</div>
+        <div class="pole-desc">Innovación & Mercados — Para quienes exploran cripto, tecnología y nuevas oportunidades.</div>
+      </div>
+      <div class="pole-card" data-pole="4">
+        <div class="pole-icon">🦉</div>
+        <div class="pole-name" style="color:var(--purple)">Oeste</div>
+        <div class="pole-desc">Seguridad & Patrimonio — Para quienes priorizan proteger y planificar lo que han construido.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how-section">
+  <div class="wrap">
+    <h2 class="section-title">¿Cómo funciona?</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Descubre tu perfil</div>
+        <div class="step-desc">Unas preguntas rápidas revelan tu polo y tu animal financiero.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Briefing diario</div>
+        <div class="step-desc">Cada día, las noticias económicas que importan. Sin ruido.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Predice el mercado</div>
+        <div class="step-desc">Wish-Trade: elige un activo, decide si sube o baja. Gana BertCoins.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Aprende y sube de nivel</div>
+        <div class="step-desc">Contenido breve por polo. Gana XP, desbloquea avatares, avanza.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-bottom">
+  <div class="wrap">
+    <h2>¿Listo para empezar?</h2>
+    <p>El registro es gratuito. Descubre tu polo en menos de 2 minutos.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="/syd/register.html">Empezar gratis</a>
+      <a class="btn btn-ghost" href="/">← Volver a BertCrypto</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><a href="/">BertCrypto</a> · <a href="/syd/">SeedYourDreams</a> · Finanzas con criterio</p>
+  </div>
+</footer>
+
+<script src="/syd/syd.js"></script>
+<script>
+  // Redirigir si ya está autenticado
+  redirectIfAuth('/syd/home.html');
+</script>
+</body>
+</html>

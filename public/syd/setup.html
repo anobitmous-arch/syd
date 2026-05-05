@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Descubre tu polo — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+
+  nav{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+
+  .step-wrap{width:100%;max-width:480px}
+  .step{display:none}
+  .step.active{display:block}
+
+  .progress-bar{display:flex;gap:8px;margin-bottom:32px;align-items:center}
+  .prog-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s,transform .3s}
+  .prog-dot.done{background:var(--green)}
+  .prog-dot.active{background:var(--orange);transform:scale(1.4)}
+  .prog-label{color:var(--muted);font-size:.8rem;margin-left:auto}
+
+  h2{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+  .step-sub{color:var(--muted);margin-bottom:28px;font-size:.95rem;line-height:1.5}
+
+  .btn{display:block;width:100%;padding:13px;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;border:none;transition:opacity .2s}
+  .btn:hover:not(:disabled){opacity:.85}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--orange);color:#070d12}
+  .error{color:#ff6b6b;font-size:.85rem;margin-top:10px;display:none}
+
+  .q-num{color:var(--orange);font-size:.85rem;font-weight:600;margin-bottom:8px;letter-spacing:.5px}
+  .q-text{font-size:1.2rem;font-weight:700;margin-bottom:24px;line-height:1.4}
+  .q-options{display:flex;flex-direction:column;gap:10px}
+  .q-opt{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s,background .2s;font-size:.95rem;text-align:left;color:var(--text)}
+  .q-opt:hover{border-color:var(--orange);background:rgba(255,159,67,.05)}
+  .q-opt.selected{border-color:var(--orange);background:rgba(255,159,67,.1);color:var(--orange)}
+  .q-nav{display:flex;gap:10px;margin-top:20px}
+  .q-nav .btn{flex:1}
+  .btn-prev{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .btn-next{background:var(--orange);color:#070d12}
+
+  .pole-result{text-align:center;margin-bottom:32px}
+  .pole-big-icon{font-size:4rem;margin-bottom:12px}
+  .pole-result-name{font-size:1.8rem;font-weight:800;margin-bottom:4px}
+  .pole-result-label{color:var(--muted);margin-bottom:16px}
+  .pole-badge{display:inline-block;border:1px solid;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:600;margin-bottom:24px}
+
+  .avatar-title{font-weight:700;margin-bottom:14px;font-size:1rem}
+  .avatars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+  .av-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .2s,transform .2s}
+  .av-card:hover{transform:translateY(-2px)}
+  .av-card.selected{border-color:var(--orange)}
+  .av-name{font-weight:600;font-size:.9rem;margin-bottom:3px}
+  .av-trait{color:var(--muted);font-size:.75rem;line-height:1.3}
+
+  .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{padding:16px;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+</nav>
+
+<main>
+  <div class="step-wrap">
+
+    <div class="progress-bar">
+      <div class="prog-dot active" id="dot0"></div>
+      <div class="prog-dot" id="dot1"></div>
+      <span class="prog-label" id="prog-label">Paso 1 de 2</span>
+    </div>
+
+    <!-- STEP 1: Cuestionario -->
+    <div class="step active" id="step-1">
+      <h2>Descubre tu polo</h2>
+      <p class="step-sub">5 preguntas rápidas para conocer tu perfil financiero.</p>
+      <div id="question-box"></div>
+      <div class="q-nav">
+        <button class="btn btn-prev" id="btn-prev" onclick="prevQ()">← Anterior</button>
+        <button class="btn btn-next" id="btn-next" onclick="nextQ()">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Resultado + Avatar -->
+    <div class="step" id="step-2">
+      <h2>Tu polo</h2>
+      <p class="step-sub">Basándonos en tus respuestas, este es tu perfil financiero.</p>
+      <div class="pole-result" id="pole-result"></div>
+      <div class="avatar-title">Elige tu avatar</div>
+      <div class="avatars-grid" id="avatars-grid"></div>
+      <div class="error" id="err-2"></div>
+      <button class="btn btn-primary" id="btn-finish" onclick="finish()" disabled>Empezar mi camino →</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>SeedYourDreams · Trading con disciplina, humildad y criterio</footer>
+
+<script src="/syd/syd.js"></script>
+<script>
+// Verificar auth — si no está logado, a login
+(async () => {
+  try {
+    const { user } = await syd.me();
+    if (user.pole_id) {
+      // Ya tiene polo, ir al home
+      location.href = '/syd/home.html';
+    }
+  } catch {
+    location.href = '/syd/login.html';
+  }
+})();
+
+const questions = [
+  {
+    text: 'Cuando recibes dinero inesperado, tu primer instinto es...',
+    opts: [
+      { text: 'Guardarlo y no tocarlo — primero el colchón.', pole: 1 },
+      { text: 'Invertirlo para que crezca a largo plazo.', pole: 2 },
+      { text: 'Buscar una oportunidad de alto retorno rápido.', pole: 3 },
+      { text: 'Distribuirlo en activos seguros y diversificados.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Tu mayor miedo financiero es...',
+    opts: [
+      { text: 'Quedarme sin ahorros de emergencia.', pole: 1 },
+      { text: 'No alcanzar mis metas de largo plazo.', pole: 2 },
+      { text: 'Perder una oportunidad de mercado importante.', pole: 3 },
+      { text: 'Perder lo que ya he construido.', pole: 4 },
+    ]
+  },
+  {
+    text: '¿Cómo describes tu relación con el riesgo?',
+    opts: [
+      { text: 'Lo evito siempre que puedo. Prefiero la certeza.', pole: 1 },
+      { text: 'Lo acepto si el retorno justifica la espera.', pole: 2 },
+      { text: 'Me parece estimulante. Forma parte del juego.', pole: 3 },
+      { text: 'Lo gestiono con mucha precaución y análisis.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Si el mercado cae un 30% mañana, tú...',
+    opts: [
+      { text: 'No me afecta. Tengo todo en ahorro, no en mercado.', pole: 1 },
+      { text: 'Compro más. Es una oportunidad de largo plazo.', pole: 2 },
+      { text: 'Analizo si hay trades activos que aprovechar.', pole: 3 },
+      { text: 'Reviso mi cartera defensiva y me mantengo tranquilo.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Tu objetivo financiero para los próximos 5 años es...',
+    opts: [
+      { text: 'Salir de deudas y tener un fondo de emergencia sólido.', pole: 1 },
+      { text: 'Hacer crecer mi patrimonio de forma sostenida.', pole: 2 },
+      { text: 'Multiplicar capital con estrategias activas.', pole: 3 },
+      { text: 'Proteger lo que tengo y asegurar el futuro familiar.', pole: 4 },
+    ]
+  },
+];
+
+const POLE_META = {
+  1: { name: 'Norte', icon: '🦙', label: 'Ahorro & Disciplina', color: 'var(--green)', desc: 'Eres constante, disciplinado y priorizas la seguridad. Tu fortaleza es construir bases sólidas sin prisa.' },
+  2: { name: 'Sur',   icon: '🦅', label: 'Inversión & Crecimiento', color: 'var(--blue)', desc: 'Piensas en el largo plazo y quieres que tu dinero trabaje para ti. Eres paciente y estratégico.' },
+  3: { name: 'Este',  icon: '🐯', label: 'Innovación & Riesgo', color: 'var(--orange)', desc: 'Eres ágil, creativo y buscas oportunidades donde otros ven caos. El riesgo calculado es tu herramienta.' },
+  4: { name: 'Oeste', icon: '🦉', label: 'Seguridad & Preservación', color: 'var(--purple)', desc: 'Valoras la protección del patrimonio. Eres sabio y analizas antes de actuar.' },
+};
+
+let currentQ = 0;
+let answers = [];
+let selectedAvatarId = null;
+let resultPoleId = null;
+
+function setDots(step) {
+  [0, 1].forEach((i, idx) => {
+    const d = document.getElementById('dot' + i);
+    d.className = 'prog-dot' + (idx < step ? ' done' : idx === step ? ' active' : '');
+  });
+  document.getElementById('prog-label').textContent = `Paso ${step + 1} de 2`;
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const box = document.getElementById('question-box');
+  const saved = answers[currentQ]?.pole;
+  box.innerHTML = `
+    <div class="q-num">PREGUNTA ${currentQ + 1} / ${questions.length}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-options">
+      ${q.opts.map(o => `
+        <button class="q-opt${saved === o.pole ? ' selected' : ''}"
+          onclick="selectOpt(this, ${o.pole})">${o.text}</button>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('btn-prev').style.visibility = currentQ > 0 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').textContent = currentQ < questions.length - 1 ? 'Siguiente →' : 'Ver resultado →';
+}
+
+function selectOpt(el, pole) {
+  el.closest('.q-options').querySelectorAll('.q-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[currentQ] = { pole };
+}
+
+function nextQ() {
+  if (!answers[currentQ]) {
+    const box = document.getElementById('question-box');
+    let msg = box.querySelector('.q-err');
+    if (!msg) { msg = document.createElement('p'); msg.className = 'q-err'; msg.style.cssText = 'color:#ff6b6b;font-size:.85rem;margin-top:10px'; box.appendChild(msg); }
+    msg.textContent = 'Selecciona una opción para continuar.';
+    return;
+  }
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function showResult() {
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  answers.forEach(a => counts[a.pole]++);
+  resultPoleId = parseInt(Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]);
+
+  document.getElementById('step-1').classList.remove('active');
+  document.getElementById('step-2').classList.add('active');
+  setDots(1);
+
+  const m = POLE_META[resultPoleId];
+  document.getElementById('pole-result').innerHTML = `
+    <div class="pole-big-icon">${m.icon}</div>
+    <div class="pole-result-name" style="color:${m.color}">${m.name}</div>
+    <div class="pole-result-label">${m.label}</div>
+    <div class="pole-badge" style="border-color:${m.color};color:${m.color}">Tu polo</div>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.5;max-width:360px;margin:0 auto">${m.desc}</p>
+  `;
+  loadAvatars(resultPoleId);
+}
+
+async function loadAvatars(poleId) {
+  const grid = document.getElementById('avatars-grid');
+  grid.innerHTML = '<div class="spinner"></div> Cargando avatares...';
+  try {
+    const data = await syd.poles();
+    const pole = data.find(p => p.id === poleId);
+    const visible = (pole?.avatars || []).filter(a => a.is_visible);
+    grid.innerHTML = visible.map(a => `
+      <div class="av-card" onclick="pickAvatar(this, ${a.id})" data-id="${a.id}">
+        <div class="av-name">${a.name}</div>
+        <div class="av-trait">${a.financial_trait}</div>
+        ${a.country ? `<div style="color:var(--muted);font-size:.7rem;margin-top:4px">${a.country}</div>` : ''}
+      </div>
+    `).join('');
+  } catch {
+    grid.innerHTML = '<p style="color:var(--muted)">Error cargando avatares.</p>';
+  }
+}
+
+function pickAvatar(el, id) {
+  document.querySelectorAll('.av-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAvatarId = id;
+  document.getElementById('btn-finish').disabled = false;
+}
+
+async function finish() {
+  const btn = document.getElementById('btn-finish');
+  const err = document.getElementById('err-2');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Guardando...';
+  try {
+    await syd.selectPole({ pole_id: resultPoleId, avatar_id: selectedAvatarId });
+    location.href = '/syd/home.html';
+  } catch (e) {
+    showError(err, e.message || 'Error al guardar. Inténtalo de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'Empezar mi camino →';
+  }
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

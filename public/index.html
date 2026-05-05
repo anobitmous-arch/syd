@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BertCrypto — Libertad financiera para todos</title>
+  <meta name="description" content="Una comunidad colaborativa donde construyes tu libertad financiera paso a paso. Sin experiencia previa, con el tiempo que tienes." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg:      #070d12;
+      --panel:   #0c1620;
+      --panel2:  #0a1319;
+      --text:    #e4eff8;
+      --muted:   #7a9ab8;
+      --border:  rgba(255,255,255,.08);
+      --shadow:  0 16px 48px rgba(0,0,0,.5);
+      --green:   #2ee59d;
+      --blue:    #5baeff;
+      --orange:  #ff9f43;
+      --green-dim: rgba(46,229,157,.08);
+      --blue-dim:  rgba(91,174,255,.08);
+      --orange-dim:rgba(255,159,67,.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Fondo animado ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(900px 600px at 10% -5%,  rgba(46,229,157,.12) 0%, transparent 55%),
+        radial-gradient(700px 500px at 90%  10%,  rgba(91,174,255,.10) 0%, transparent 55%),
+        radial-gradient(600px 400px at 50%  90%,  rgba(255,159,67,.07) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+    * { position: relative; z-index: 1; }
+
+    /* ── Utilidades ── */
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+    .muted  { color: var(--muted); }
+    .green  { color: var(--green); }
+    .blue   { color: var(--blue);  }
+    .orange { color: var(--orange);}
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+    }
+    .tag-green  { border-color: rgba(46,229,157,.3);  background: rgba(46,229,157,.08);  color: var(--green); }
+    .tag-blue   { border-color: rgba(91,174,255,.3);  background: rgba(91,174,255,.08);  color: var(--blue);  }
+    .tag-orange { border-color: rgba(255,159,67,.3);  background: rgba(255,159,67,.08);  color: var(--orange);}
+
+    /* ── Nav ── */
+    nav {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(7,13,18,.7);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand {
+      font-size: 17px; font-weight: 800; letter-spacing: -.3px;
+      color: var(--text); text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .brand-logo svg { display: block; }
+    .nav-links { display: flex; gap: 6px; align-items: center; }
+    .nav-link {
+      padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-decoration: none;
+      transition: color .15s, background .15s;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,.04); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer;
+      font-family: inherit; font-weight: 700; font-size: 14px; text-decoration: none;
+      transition: filter .15s, transform .1s;
+    }
+    .btn:hover  { filter: brightness(1.1); }
+    .btn:active { transform: scale(.97); }
+    .btn-primary   { background: var(--green); color: #041a0e; }
+    .btn-secondary { background: rgba(255,255,255,.06); border: 1px solid var(--border); color: var(--text); }
+    .btn-orange    { background: var(--orange); color: #1a0a00; }
+    .btn-ghost     { background: transparent; border: 1px solid rgba(91,174,255,.3); color: var(--blue); }
+
+    /* ── Hero ── */
+    .hero { padding: 100px 0 80px; text-align: center; }
+    .hero-eyebrow { margin-bottom: 20px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 900; letter-spacing: -.5px; line-height: 1.1;
+      margin-bottom: 22px; max-width: 820px;
+      margin-left: auto; margin-right: auto;
+    }
+    .hero h1 span { color: var(--green); }
+    .hero h1 em   { color: var(--blue); font-style: normal; }
+    .hero-sub {
+      font-size: 18px; color: var(--muted); max-width: 600px;
+      margin: 0 auto 36px; line-height: 1.7;
+    }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .hero-proof {
+      margin-top: 60px;
+      display: flex; gap: 0; justify-content: center; flex-wrap: wrap;
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      background: linear-gradient(160deg, var(--panel) 0%, var(--panel2) 100%);
+      max-width: 680px; margin-left: auto; margin-right: auto;
+    }
+    .proof-item {
+      flex: 1; min-width: 130px;
+      padding: 22px 16px; border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .proof-item:last-child { border-right: none; }
+    .proof-val  { font-size: 26px; font-weight: 800; letter-spacing: -.4px; line-height: 1; }
+    .proof-label{ font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 600;
+                  text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ── Secciones generales ── */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-tag   { margin-bottom: 12px; }
+    .section-title {
+      font-size: clamp(22px, 3.5vw, 36px);
+      font-weight: 800; letter-spacing: -.3px;
+      margin-bottom: 14px; line-height: 1.2;
+    }
+    .section-lead {
+      font-size: 16px; color: var(--muted);
+      max-width: 620px; line-height: 1.65; margin-bottom: 40px;
+    }
+
+    /* ── Para quién ── */
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .profile-card {
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(160deg, var(--panel) 0%, var(--panel2) 100%);
+    }
+    .profile-icon  { font-size: 28px; margin-bottom: 12px; }
+    .profile-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .profile-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .profile-green  { border-color: rgba(46,229,157,.2); }
+    .profile-blue   { border-color: rgba(91,174,255,.2); }
+    .profile-orange { border-color: rgba(255,159,67,.2); }
+    .profile-purple { border-color: rgba(199,122,255,.2); }
+
+    /* ── SYD central ── */
+    .syd-hero {
+      border: 1px solid rgba(46,229,157,.2);
+      border-radius: 24px;
+      padding: 52px 44px;
+      background: linear-gradient(135deg, rgba(46,229,157,.05) 0%, rgba(91,174,255,.04) 100%);
+      text-align: center;
+    }
+    @media (max-width: 600px) { .syd-hero { padding: 32px 20px; } }
+    .syd-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 999px;
+      border: 1px solid rgba(46,229,157,.3);
+      background: rgba(46,229,157,.08);
+      font-size: 12px; font-weight: 700; color: var(--green);
+      text-transform: uppercase; letter-spacing: .6px;
+      margin-bottom: 24px;
+    }
+    .syd-badge::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1);   box-shadow: 0 0 8px  rgba(46,229,157,.7); }
+      50%       { opacity: .7; transform: scale(.85); box-shadow: 0 0 14px rgba(46,229,157,.4); }
+    }
+    .syd-hero h2 {
+      font-size: clamp(26px, 4vw, 46px);
+      font-weight: 900; letter-spacing: -.4px; line-height: 1.1;
+      margin-bottom: 18px;
+    }
+    .syd-hero h2 span { color: var(--green); }
+    .syd-hero p {
+      font-size: 17px; color: var(--muted); max-width: 560px;
+      margin: 0 auto 36px; line-height: 1.7;
+    }
+    .syd-poles {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 36px;
+    }
+    .pole {
+      padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+    }
+    .syd-hero .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Cómo funciona ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 4px;
+    }
+    .step {
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(160deg, var(--panel) 0%, var(--panel2) 100%);
+      position: relative;
+    }
+    .step-num {
+      font-size: 11px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px;
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .step p   { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .step-1 { border-color: rgba(46,229,157,.2);  } .step-1 .step-num { color: var(--green);  }
+    .step-2 { border-color: rgba(91,174,255,.2);  } .step-2 .step-num { color: var(--blue);   }
+    .step-3 { border-color: rgba(255,159,67,.2);  } .step-3 .step-num { color: var(--orange); }
+    .step-4 { border-color: rgba(199,122,255,.2); } .step-4 .step-num { color: #c77aff;       }
+
+    /* ── Automatización (bots) ── */
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px; margin-bottom: 28px;
+    }
+    .bot-card {
+      padding: 20px; border: 1px solid var(--border);
+      border-radius: 16px; background: rgba(255,255,255,.02);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .bot-card-top { display: flex; align-items: center; justify-content: space-between; }
+    .bot-name { font-size: 15px; font-weight: 700; }
+    .bot-pair { font-size: 12px; color: var(--muted); }
+    .bot-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .bot-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; color: var(--green);
+    }
+    .bot-status::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .bots-note {
+      padding: 16px 20px; border-radius: 14px;
+      border: 1px solid rgba(91,174,255,.15);
+      background: rgba(91,174,255,.05);
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+    .bots-note strong { color: var(--blue); }
+
+    /* ── Filosofía ── */
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 24px; align-items: start;
+    }
+    @media (max-width: 720px) { .philosophy-grid { grid-template-columns: 1fr; } }
+    .blockquote {
+      padding: 24px 28px;
+      border-left: 3px solid var(--orange);
+      background: rgba(255,159,67,.05);
+      border-radius: 0 16px 16px 0;
+      margin-bottom: 24px;
+    }
+    .blockquote p    { font-size: 17px; font-style: italic; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+    .blockquote cite { font-size: 12px; color: var(--muted); font-style: normal; }
+    .principles { display: flex; flex-direction: column; gap: 12px; }
+    .principle  {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .principle-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .principle-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .principle-text p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── CTA final ── */
+    .cta-band { text-align: center; padding: 80px 20px; }
+    .cta-band h2 {
+      font-size: clamp(22px, 3.5vw, 38px); font-weight: 800;
+      letter-spacing: -.3px; margin-bottom: 14px;
+    }
+    .cta-band h2 span { color: var(--green); }
+    .cta-band p { font-size: 16px; color: var(--muted); margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta-band .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); padding: 28px 0; font-size: 13px; color: var(--muted); }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: var(--muted); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .nav-links .nav-link { display: none; }
+      .hero-proof { border-radius: 14px; }
+      .proof-item { min-width: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="wrap">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <span class="brand-logo">
+            <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="7" fill="#060b0f"/>
+              <!-- B (green) -->
+              <rect x="4"  y="6"  width="4"  height="20" rx="2" fill="#22d47a"/>
+              <rect x="4"  y="6"  width="10" height="4"  rx="2" fill="#22d47a"/>
+              <rect x="4"  y="14" width="10" height="4"  rx="2" fill="#22d47a"/>
+              <rect x="4"  y="22" width="10" height="4"  rx="2" fill="#22d47a"/>
+              <rect x="10" y="10" width="4"  height="4"  rx="2" fill="#22d47a"/>
+              <rect x="10" y="18" width="4"  height="4"  rx="2" fill="#22d47a"/>
+              <!-- C (blue, mirrored) -->
+              <rect x="24" y="6"  width="4"  height="20" rx="2" fill="#3b9eff"/>
+              <rect x="18" y="6"  width="10" height="4"  rx="2" fill="#3b9eff"/>
+              <rect x="18" y="22" width="10" height="4"  rx="2" fill="#3b9eff"/>
+            </svg>
+          </span>
+          BertCrypto
+        </a>
+        <div class="nav-links">
+          <a class="nav-link" href="#para-quien">Para quién</a>
+          <a class="nav-link" href="#como-funciona">Cómo funciona</a>
+          <a class="nav-link" href="#syd">SYD</a>
+          <a class="btn btn-primary" href="/syd/" style="padding:8px 16px;">Entrar →</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-eyebrow">
+        <span class="tag tag-green">Comunidad abierta</span>
+        <span class="tag tag-blue">Sin experiencia previa</span>
+        <span class="tag tag-orange">10 min al día</span>
+      </div>
+
+      <h1>Tu dinero puede trabajar para ti.<br/>
+        <span>Aunque no sepas nada</span> de <em>finanzas.</em>
+      </h1>
+
+      <p class="hero-sub">
+        SeedYourDreams es la comunidad donde personas como tú construyen
+        su libertad financiera — paso a paso, con el tiempo que tienen,
+        sin importar desde dónde empiezan.
+      </p>
+
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="/syd/">Unirme a la comunidad →</a>
+        <a class="btn btn-secondary" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+
+      <div class="hero-proof">
+        <div class="proof-item">
+          <div class="proof-val green">7+</div>
+          <div class="proof-label">En la comunidad</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-val blue">4</div>
+          <div class="proof-label">Caminos de crecimiento</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-val orange">0€</div>
+          <div class="proof-label">Para empezar</div>
+        </div>
+        <div class="proof-item">
+          <div class="proof-val" style="color:#c77aff;">0</div>
+          <div class="proof-label">Experiencia necesaria</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PARA QUIÉN ── -->
+  <section id="para-quien">
+    <div class="wrap">
+      <div class="section-tag"><span class="tag tag-blue">Para todos los perfiles</span></div>
+      <h2 class="section-title">Si tienes tiempo limitado, esto es para ti</h2>
+      <p class="section-lead">
+        No hace falta ser trader, tener capital, ni entender de bolsa.
+        La única condición es querer tomar el control de tu situación financiera.
+      </p>
+
+      <div class="profiles">
+        <div class="profile-card profile-green">
+          <div class="profile-icon">👩‍💼</div>
+          <div class="profile-title green">El profesional ocupado</div>
+          <p class="profile-desc">Tienes ingresos pero no tiempo. Aquí aprendes a que el dinero trabaje sin que tú estés pendiente.</p>
+        </div>
+        <div class="profile-card profile-blue">
+          <div class="profile-icon">🧑‍🎓</div>
+          <div class="profile-title blue">El que empieza de cero</div>
+          <p class="profile-desc">Nunca has invertido, no sabes qué es un ETF y te da vértigo el crypto. Perfecto, aquí se empieza así.</p>
+        </div>
+        <div class="profile-card profile-orange">
+          <div class="profile-icon">🎯</div>
+          <div class="profile-title orange">El que quiere ir más allá</div>
+          <p class="profile-desc">Ya tienes algo de base y quieres entrar en automatización, cripto y estrategias más avanzadas.</p>
+        </div>
+        <div class="profile-card profile-purple">
+          <div class="profile-icon">🌱</div>
+          <div class="profile-title" style="color:#c77aff;">El curioso sin capital</div>
+          <p class="profile-desc">Sin dinero para invertir ahora mismo. La comunidad te ayuda a construir la mentalidad primero.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SYD CENTRAL ── -->
+  <section id="syd">
+    <div class="wrap">
+      <div class="syd-hero">
+        <div class="syd-badge">Comunidad activa</div>
+
+        <h2><span>SeedYourDreams</span> —<br/>Tu comunidad financiera</h2>
+
+        <p>
+          No es una escuela al uso. Es una comunidad colaborativa donde
+          avanzas a tu ritmo, compartes progreso con otros y construyes
+          hábitos financieros que duran. Elige tu camino.
+        </p>
+
+        <div class="syd-poles">
+          <span class="pole" style="border-color:rgba(46,229,157,.25);  color:var(--green);">🦙 Norte — Ahorro</span>
+          <span class="pole" style="border-color:rgba(91,174,255,.25);  color:var(--blue);">🦅 Sur — Inversión</span>
+          <span class="pole" style="border-color:rgba(255,159,67,.25);  color:var(--orange);">🐯 Este — Riesgo</span>
+          <span class="pole" style="border-color:rgba(199,122,255,.25); color:#c77aff;">🦉 Oeste — Seguridad</span>
+        </div>
+
+        <div class="btns">
+          <a class="btn btn-primary" href="/syd/">Entrar a SYD →</a>
+          <a class="btn btn-secondary" href="https://t.me/bertcryptooficial" target="_blank" rel="noopener">Canal Telegram</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CÓMO FUNCIONA ── -->
+  <section id="como-funciona">
+    <div class="wrap">
+      <div class="section-tag"><span class="tag tag-green">El proceso</span></div>
+      <h2 class="section-title">Simple. Sin compromisos. A tu ritmo.</h2>
+      <p class="section-lead">
+        Cuatro pasos para pasar de "no sé nada de esto" a tener un sistema financiero propio.
+      </p>
+
+      <div class="steps">
+        <div class="step step-1">
+          <div class="step-num">Paso 01</div>
+          <h3 class="green">Elige tu camino</h3>
+          <p>Ahorro, inversión, riesgo o seguridad. Empiezas por donde más sentido tiene según tu situación real.</p>
+        </div>
+        <div class="step step-2">
+          <div class="step-num">Paso 02</div>
+          <h3 class="blue">Aprende en pequeñas dosis</h3>
+          <p>Lecciones de 5-10 min con casos reales. Sin jerga innecesaria, sin teoría vacía, sin exámenes de presión.</p>
+        </div>
+        <div class="step step-3">
+          <div class="step-num">Paso 03</div>
+          <h3 class="orange">Construye hábitos</h3>
+          <p>Daily loop, streaks y misiones semanales. El sistema te mantiene constante aunque no tengas motivación ese día.</p>
+        </div>
+        <div class="step step-4">
+          <div class="step-num">Paso 04</div>
+          <h3 style="color:#c77aff;">Crece con la comunidad</h3>
+          <p>Comparte avances, gana BertCoins y aprende de lo que están haciendo los demás. Juntos es más fácil.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AUTOMATIZACIÓN ── -->
+  <section id="automatizacion">
+    <div class="wrap">
+      <div class="section-tag"><span class="tag tag-blue">El siguiente nivel</span></div>
+      <h2 class="section-title">Cuando estás listo: el dinero trabaja solo</h2>
+      <p class="section-lead">
+        Para los que quieren ir más lejos, BertCrypto opera bots automatizados en cripto 24/7.
+        Estrategias reales, sin intervención manual. Esto es lo que construyes cuando estás preparado.
+      </p>
+
+      <div class="bots-grid">
+        <div class="bot-card" style="border-color: rgba(46,229,157,.18);">
+          <div class="bot-card-top">
+            <div><div class="bot-name green">EmaScalperV2</div><div class="bot-pair">DOGE/USD · 15m</div></div>
+            <span class="bot-status">Live</span>
+          </div>
+          <p class="bot-desc">EMA 20/50 + pullback RSI. Filtros de ADX, rango y tendencia HTF. SL/TP por ATR.</p>
+        </div>
+        <div class="bot-card" style="border-color: rgba(91,174,255,.18);">
+          <div class="bot-card-top">
+            <div><div class="bot-name blue">RsiScalper</div><div class="bot-pair">XRP/USD · 15m</div></div>
+            <span class="bot-status">Live</span>
+          </div>
+          <p class="bot-desc">Reversión a la media pura. RSI 30/70 con gestión de riesgo ATR y filtro de tendencia.</p>
+        </div>
+        <div class="bot-card" style="border-color: rgba(255,159,67,.18);">
+          <div class="bot-card-top">
+            <div><div class="bot-name orange">JaimeStratX</div><div class="bot-pair">HYPE/USD · 15m</div></div>
+            <span class="bot-status">Live</span>
+          </div>
+          <p class="bot-desc">RSI en marco rápido. Estrategia de alta frecuencia con SL/TP ajustados por volatilidad.</p>
+        </div>
+        <div class="bot-card" style="border-color: rgba(199,122,255,.18);">
+          <div class="bot-card-top">
+            <div><div class="bot-name" style="color:#c77aff;">MacdAuto</div><div class="bot-pair">SOL/USD · 15m</div></div>
+            <span class="bot-status">Live</span>
+          </div>
+          <p class="bot-desc">Momentum MACD con histograma. Filtro EMA200, TP/SL porcentual y break-even dinámico.</p>
+        </div>
+      </div>
+
+      <div class="bots-note">
+        <strong>¿Cómo llego a esto?</strong> Empiezas en SYD, construyes base financiera, y cuando estás listo
+        la comunidad te acompaña en cada paso hacia la automatización. No hay saltos al vacío.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FILOSOFÍA ── -->
+  <section id="filosofia">
+    <div class="wrap">
+      <div class="philosophy-grid">
+        <div>
+          <div class="section-tag" style="margin-bottom:16px;"><span class="tag tag-orange">Lo que nos mueve</span></div>
+          <div class="blockquote">
+            <p>"El dinero puede ser una herramienta de libertad si se gestiona con disciplina, humildad y criterio."</p>
+            <cite>Principio fundacional de SeedYourDreams</cite>
+          </div>
+          <p style="font-size:15px; color:var(--muted); line-height:1.7;">
+            No vendemos sueños de riqueza rápida. Lo que construimos aquí es un marco real:
+            entender el dinero, tomar decisiones con criterio, aprender de cada paso —
+            acertado o no. La libertad financiera no es un destino, es un hábito.
+          </p>
+        </div>
+
+        <div class="principles">
+          <div class="principle">
+            <span class="principle-icon">🧘</span>
+            <div class="principle-text">
+              <h4>Disciplina</h4>
+              <p>Un pequeño hábito constante supera a la gran decisión esporádica. Siempre.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-icon">🪞</span>
+            <div class="principle-text">
+              <h4>Humildad</h4>
+              <p>No saber es el punto de partida, no un problema. Empezar desde cero es una ventaja.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-icon">🔭</span>
+            <div class="principle-text">
+              <h4>Criterio</h4>
+              <p>No toda oportunidad merece atención. Aprender a decir que no es la habilidad más valiosa.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA FINAL ── -->
+  <section class="cta-band">
+    <div class="wrap">
+      <h2>¿Empezamos <span>juntos</span>?</h2>
+      <p>La comunidad es gratuita. No hace falta experiencia ni capital para dar el primer paso.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="/syd/">Entrar a SeedYourDreams →</a>
+        <a class="btn btn-secondary" href="https://t.me/bertcryptooficial" target="_blank" rel="noopener">Canal Telegram</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-inner">
+        <span>© 2026 BertCrypto · Construido con criterio</span>
+        <div class="footer-links">
+          <a href="https://t.me/bertcryptooficial" target="_blank" rel="noopener">Telegram</a>
+          <a href="/syd/">SeedYourDreams</a>
+          <a href="#automatizacion">Bots</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

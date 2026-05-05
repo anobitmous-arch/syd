@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5;--pole-color:var(--orange)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+
+  /* NAV */
+  nav{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:20px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.85rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+  .nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--pole-color)}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+  .btn-logout:hover{color:var(--text)}
+
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  .page{padding:32px 0 60px}
+
+  /* USER CARD */
+  .user-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-left:4px solid var(--pole-color)}
+  .av-bubble{width:56px;height:56px;border-radius:50%;background:rgba(255,159,67,.1);border:2px solid var(--pole-color);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+  .user-info{flex:1}
+  .user-name{font-size:1.2rem;font-weight:700}
+  .user-meta{color:var(--muted);font-size:.85rem;margin-top:3px}
+  .user-pole-badge{display:inline-block;border:1px solid;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:8px;vertical-align:middle}
+  /* BERTCOIN BADGE */
+  .coin-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#ffd700;white-space:nowrap;margin-top:6px}
+  .coin-badge .coin-icon{font-size:.9rem}
+
+  .xp-section{min-width:160px}
+  .xp-label{font-size:.8rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+  .xp-bar{background:var(--border);border-radius:4px;height:6px;overflow:hidden}
+  .xp-fill{height:100%;border-radius:4px;background:var(--pole-color);transition:width .6s ease}
+  .level-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px}
+  .level-num{background:var(--pole-color);color:#070d12;font-weight:700;font-size:.8rem;padding:2px 8px;border-radius:4px}
+
+  /* DAILY CHECKIN */
+  .checkin-wrap{margin-bottom:24px}
+  .btn-checkin{width:100%;background:var(--pole-color);color:#070d12;border:none;border-radius:12px;padding:16px 24px;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:10px}
+  .btn-checkin:hover{opacity:.88}
+  .btn-checkin:active{transform:scale(.98)}
+  .btn-checkin:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .checkin-done{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .checkin-done-label{font-size:.88rem;color:var(--muted)}
+  .checkin-done-label span{color:var(--green);font-weight:600}
+  .checkin-timer{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+  /* WISH-TRADE BUTTON */
+  .btn-wishtrade{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(90deg,rgba(255,159,67,.15),rgba(199,122,255,.15));border:1px solid rgba(255,159,67,.35);border-radius:12px;padding:14px 24px;font-size:.95rem;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;transition:all .2s;margin-bottom:24px}
+  .btn-wishtrade:hover{background:linear-gradient(90deg,rgba(255,159,67,.25),rgba(199,122,255,.25));border-color:rgba(255,159,67,.6);transform:translateY(-1px)}
+  .btn-wishtrade:active{transform:translateY(0)}
+  .btn-wishtrade .wt-arrow{margin-left:auto;opacity:.6;font-size:.85rem}
+
+  /* NEWS CAROUSEL */
+  .news-section{margin-bottom:28px}
+  .news-title-row{margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .news-main-title{font-size:1.1rem;font-weight:700}
+  .news-dots{display:flex;gap:5px;align-items:center}
+  .news-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .3s,width .3s}
+  .news-dot.active{background:var(--blue);width:18px;border-radius:3px}
+  .news-carousel-wrap{overflow:hidden;border-radius:12px;position:relative}
+  .news-carousel-track{display:flex;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform}
+  .news-card{flex:0 0 100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;box-sizing:border-box;min-height:120px;display:flex;flex-direction:column;gap:10px}
+  .news-card-header{display:flex;align-items:center;gap:10px}
+  .news-num{width:26px;height:26px;border-radius:50%;background:rgba(91,174,255,.12);border:1px solid rgba(91,174,255,.25);color:var(--blue);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .news-card-title{font-size:.9rem;font-weight:600;line-height:1.45;color:var(--text)}
+  .news-card-title a{color:inherit;transition:color .2s}
+  .news-card-title a:hover{color:var(--blue)}
+  .news-card-summary{font-size:.78rem;color:var(--muted);line-height:1.55;flex:1}
+  .news-empty{color:var(--muted);font-size:.85rem;padding:14px 0}
+
+  /* REFERRAL CARD */
+  .ref-card{background:linear-gradient(135deg,rgba(255,159,67,.08) 0%,rgba(199,122,255,.06) 100%);border:1px solid rgba(255,159,67,.25);border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .ref-card-icon{font-size:1.8rem;flex-shrink:0}
+  .ref-card-body{flex:1;min-width:180px}
+  .ref-card-title{font-size:.92rem;font-weight:700;margin-bottom:2px}
+  .ref-card-sub{font-size:.78rem;color:var(--muted);margin-bottom:10px}
+  .ref-code-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ref-code{font-size:1.2rem;font-weight:900;letter-spacing:.12em;color:var(--orange)}
+  .btn-copy-ref-home{padding:6px 14px;border-radius:8px;background:var(--orange);color:#070d12;font-weight:700;font-size:.8rem;border:none;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+  .btn-copy-ref-home:hover{opacity:.85}
+  .ref-count{font-size:.78rem;color:var(--muted);margin-top:8px}
+  .ref-count strong{color:var(--green)}
+
+  /* RECENT MISSIONS */
+  .recent-section{margin-bottom:28px}
+  .section-title{font-size:1.1rem;font-weight:700;margin-bottom:14px}
+  .recent-list{display:flex;flex-direction:column;gap:8px}
+  .recent-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px}
+  .recent-check{width:28px;height:28px;border-radius:50%;background:rgba(46,229,157,.12);border:1px solid var(--green);color:var(--green);font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .recent-info{flex:1}
+  .recent-sub-name{font-size:.88rem;font-weight:600}
+  .recent-mission-name{font-size:.76rem;color:var(--muted);margin-top:2px}
+  .recent-xp{font-size:.78rem;font-weight:700;color:var(--green);white-space:nowrap}
+  .recent-time{font-size:.73rem;color:var(--muted);white-space:nowrap}
+  .recent-empty{color:var(--muted);font-size:.85rem;padding:12px 0}
+
+  /* STREAK BADGE */
+  .streak-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,100,50,.1);border:1px solid rgba(255,100,50,.3);border-radius:20px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#ff6432;white-space:nowrap;margin-top:6px;margin-left:8px}
+
+  /* DAILY LOOP TRACKER */
+  .daily-loop{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:20px;gap:0}
+  .loop-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;cursor:default}
+  .loop-icon-wrap{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:border-color .3s,background .3s}
+  .loop-step.done .loop-icon-wrap{border-color:var(--green);background:rgba(46,229,157,.12)}
+  .loop-step.done .loop-icon-wrap::after{content:'✓';position:absolute;top:-4px;right:calc(50% - 26px);width:18px;height:18px;background:var(--green);border-radius:50%;font-size:.65rem;font-weight:700;color:#070d12;display:flex;align-items:center;justify-content:center;line-height:18px;text-align:center}
+  .loop-label{font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.3px;text-align:center}
+  .loop-step.done .loop-label{color:var(--green)}
+  .loop-divider{width:32px;height:2px;background:var(--border);flex-shrink:0;margin-bottom:22px;transition:background .3s}
+  .loop-divider.done{background:var(--green)}
+  .loop-complete{display:none;text-align:center;padding:8px 0 2px;font-size:.8rem;font-weight:700;color:var(--green);letter-spacing:.3px}
+  .loop-complete.show{display:block}
+
+  /* LESSON CARD */
+  .lesson-section{margin-bottom:28px}
+  .lesson-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .lesson-card-header{padding:12px 16px 0;display:flex;flex-direction:column;gap:3px}
+  .lesson-breadcrumb{font-size:.72rem;color:var(--muted);letter-spacing:.3px}
+  .lesson-title{font-size:1rem;font-weight:700;margin-bottom:4px}
+  .lesson-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+  .lesson-content{font-size:.87rem;line-height:1.65;color:var(--text)}
+  .lesson-tips{list-style:none;display:flex;flex-direction:column;gap:5px}
+  .lesson-tips li{font-size:.82rem;color:var(--muted);padding-left:16px;position:relative;line-height:1.4}
+  .lesson-tips li::before{content:"→";position:absolute;left:0;color:var(--pole-color)}
+  .lesson-divider{height:1px;background:var(--border);margin:4px 0}
+  .lesson-quiz-q{font-size:.88rem;font-weight:600;margin-bottom:10px;line-height:1.4}
+  .lesson-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .lesson-opt{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:.84rem;text-align:left;color:var(--text);transition:border-color .2s,background .2s;width:100%}
+  .lesson-opt:hover:not(:disabled){border-color:var(--pole-color);background:rgba(255,255,255,.03)}
+  .lesson-opt.correct{border-color:var(--green)!important;background:rgba(46,229,157,.1)!important;color:var(--green)}
+  .lesson-opt.wrong{border-color:#ff6b6b!important;background:rgba(255,107,107,.08)!important;color:#ff6b6b}
+  .lesson-opt:disabled{cursor:default}
+  .lesson-feedback{font-size:.82rem;font-weight:600;margin-bottom:8px;min-height:18px}
+  .lesson-feedback.ok{color:var(--green)}
+  .lesson-feedback.fail{color:#ff6b6b}
+  .btn-complete-lesson{background:var(--pole-color);color:#070d12;border:none;padding:10px 22px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.9rem;transition:opacity .2s;display:none;width:100%}
+  .btn-complete-lesson:hover{opacity:.85}
+  .lesson-all-done{text-align:center;padding:20px;color:var(--muted);font-size:.9rem}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:60px;color:var(--muted)}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* XP TOAST */
+  .xp-toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#070d12;font-weight:700;padding:10px 18px;border-radius:8px;font-size:.9rem;transform:translateY(80px);opacity:0;transition:all .3s;z-index:100}
+  .xp-toast.show{transform:translateY(0);opacity:1}
+
+  @media(max-width:600px){.user-card{flex-direction:column;align-items:flex-start}.xp-section{width:100%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <div class="nav-links">
+    <a class="nav-link active" href="/syd/home.html">Home</a>
+    <a class="nav-link" href="/syd/missions.html">Aprende</a>
+    <a class="nav-link" href="/syd/community.html">Comunidad</a>
+    <a class="nav-link" href="/syd/profile.html">Perfil</a>
+    <a class="nav-link" href="/syd/wish-trade.html">Wish-Trade</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</nav>
+
+<div class="wrap page">
+  <div id="loading" class="loading-wrap">
+    <div class="spinner"></div>
+    <div>Cargando...</div>
+  </div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+
+<script src="/syd/syd.js"></script>
+<script>
+let user = null;
+let countdownInterval = null;
+
+async function doLogout() {
+  await syd.logout().catch(() => {});
+  location.href = '/syd/';
+}
+
+async function init() {
+  user = await requireAuth('/syd/login.html');
+  if (!user) return;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  renderShell();
+  loadCheckinStatus();
+  loadNews();           // también marca loop-news
+  checkTradeStatus();   // marca loop-trade
+  loadLesson();         // carga lección del día
+  loadRecent();         // también marca loop-lesson si hay algo hoy
+  loadReferral();       // carga código de referido
+}
+
+function renderShell() {
+  const m = poleById(user.pole_id);
+  const { level, progress } = xpToLevel(user.xp || 0);
+  document.documentElement.style.setProperty('--pole-color', m.color);
+
+  document.getElementById('content').innerHTML = `
+    <div class="user-card" style="border-left-color:${m.color}">
+      <div class="av-bubble" style="border-color:${m.color}">${m.icon}</div>
+      <div class="user-info">
+        <div class="user-name">
+          ${user.avatar_name || 'Sin avatar'}
+          <span class="user-pole-badge" style="border-color:${m.color};color:${m.color}">${m.name}</span>
+        </div>
+        <div class="user-meta">${user.username} · ${m.label}</div>
+      </div>
+      <div class="xp-section">
+        <div class="xp-label">
+          <span id="xp-val">XP: ${user.xp || 0}</span>
+          <span id="lvl-val">Nivel ${level}</span>
+        </div>
+        <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:${progress}%;background:${m.color}"></div></div>
+        <div class="level-badge">
+          <span class="level-num" id="lvl-num" style="background:${m.color}">Nv. ${level}</span>
+          <span style="color:var(--muted);font-size:.75rem" id="xp-next">${progress}/100 XP al siguiente</span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">
+          <div class="coin-badge" id="coin-badge">
+            <span class="coin-icon">🪙</span>
+            <span id="coin-val">${user.bertcoins || 0}</span> BRT
+          </div>
+          <div class="streak-badge" id="streak-badge">
+            🔥 <span id="streak-val">${user.streak || 0}</span> días
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkin-wrap" id="checkin-wrap">
+      <div class="loading-wrap" style="padding:16px"><div class="spinner" style="width:18px;height:18px;border-width:2px;margin:0 auto"></div></div>
+    </div>
+
+    <!-- DAILY LOOP TRACKER -->
+    <div class="daily-loop" id="daily-loop">
+      <div class="loop-step" id="loop-news">
+        <div class="loop-icon-wrap">📡</div>
+        <div class="loop-label">Briefing</div>
+      </div>
+      <div class="loop-divider" id="loop-div-1"></div>
+      <div class="loop-step" id="loop-trade" onclick="location.href='/syd/wish-trade.html'" style="cursor:pointer" title="Ir a Wish-Trade">
+        <div class="loop-icon-wrap">⚡</div>
+        <div class="loop-label">Predicción</div>
+      </div>
+      <div class="loop-divider" id="loop-div-2"></div>
+      <div class="loop-step" id="loop-lesson">
+        <div class="loop-icon-wrap">📚</div>
+        <div class="loop-label">Lección</div>
+      </div>
+    </div>
+    <div class="loop-complete" id="loop-complete">🌟 ¡Día completo! Vuelve mañana.</div>
+
+    <!-- MOBILE ACTION PILLS (visible solo en ≤768px vía syd-mobile.css) -->
+    <div class="syd-m-actions" id="syd-m-actions">
+      <a href="/syd/wish-trade.html" class="syd-m-pill" id="mpill-trade">
+        <span class="syd-m-pill-icon">⚡</span>
+        <span class="syd-m-pill-label">Predicción</span>
+        <span class="syd-m-pill-check" id="mpill-trade-check"></span>
+      </a>
+      <a href="/syd/missions.html" class="syd-m-pill" id="mpill-lesson">
+        <span class="syd-m-pill-icon">📚</span>
+        <span class="syd-m-pill-label">Lección</span>
+        <span class="syd-m-pill-check" id="mpill-lesson-check"></span>
+      </a>
+      <span class="syd-m-pill" id="mpill-news">
+        <span class="syd-m-pill-icon">📡</span>
+        <span class="syd-m-pill-label">Briefing</span>
+        <span class="syd-m-pill-check" id="mpill-news-check"></span>
+      </span>
+    </div>
+
+    <a class="btn-wishtrade" href="/syd/wish-trade.html">
+      ⚡ Empieza a usar tus Bertcoins!
+      <span class="wt-arrow">→</span>
+    </a>
+
+    <div class="news-section">
+      <div class="news-title-row">
+        <div class="news-main-title">📡 CrypToDay</div>
+        <div class="news-dots" id="news-dots"></div>
+      </div>
+      <div class="news-carousel-wrap">
+        <div class="news-carousel-track" id="news-track">
+          <div class="news-card"><div class="news-empty">Cargando noticias...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LECCIÓN DEL DÍA -->
+    <div class="lesson-section">
+      <div class="section-title" style="margin-bottom:14px">📚 Lección del día</div>
+      <div id="lesson-card-wrap">
+        <div class="lesson-card"><div class="lesson-all-done">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- REFERRAL CARD -->
+    <div class="ref-card" id="ref-card" style="display:none">
+      <div class="ref-card-icon">🎁</div>
+      <div class="ref-card-body">
+        <div class="ref-card-title">Invita a un amigo</div>
+        <div class="ref-card-sub">Tú y tu amigo ganáis <strong style="color:var(--orange)">+50 BRT</strong> cuando haga su primer check-in</div>
+        <div class="ref-code-row">
+          <span class="ref-code" id="ref-code-display">——</span>
+          <button class="btn-copy-ref-home" id="btn-copy-ref-home" onclick="copyRefHome()">📋 Copiar enlace</button>
+        </div>
+        <div class="ref-count" id="ref-count-display"></div>
+      </div>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-title">📋 Últimas lecciones completadas</div>
+      <div class="recent-list" id="recent-list">
+        <div class="recent-empty">Cargando...</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── CHECKIN ──────────────────────────────────────────────
+
+async function loadCheckinStatus() {
+  try {
+    const { done, checked_at } = await syd.checkinStatus();
+    renderCheckin(done, checked_at);
+  } catch {
+    renderCheckin(false, null);
+  }
+}
+
+function renderCheckin(done, checkedAt) {
+  const wrap = document.getElementById('checkin-wrap');
+  if (!wrap) return;
+  if (done) {
+    wrap.innerHTML = checkinDoneHTML();
+    startCountdown(checkedAt);
+  } else {
+    wrap.innerHTML = `
+      <button class="btn-checkin" id="checkin-btn" onclick="doCheckin()">
+        🎁 Reclamar +10 XP · 🪙 +10 BRT
+      </button>
+    `;
+  }
+}
+
+async function doCheckin() {
+  const btn = document.getElementById('checkin-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  let checkedAt = null;
+  try {
+    const res = await syd.dailyCheckin();
+    checkedAt = res.checked_at || new Date().toISOString();
+    if (res.xp_earned > 0) {
+      user.xp = (user.xp || 0) + res.xp_earned;
+      user.bertcoins = (user.bertcoins || 0) + (res.coins_earned || 0);
+      updateXPDisplay();
+      showToast(`+${res.xp_earned} XP · 🪙 +${res.coins_earned || 0} BRT — ¡Bonus diario!`);
+    }
+  } catch {
+    checkedAt = new Date().toISOString();
+  }
+  const wrap = document.getElementById('checkin-wrap');
+  if (wrap) {
+    wrap.innerHTML = checkinDoneHTML();
+    startCountdown(checkedAt);
+  }
+}
+
+function checkinDoneHTML() {
+  return `
+    <div class="checkin-done">
+      <div class="checkin-done-label"><span>✓ Bonus diario reclamado</span> — regresa en</div>
+      <div class="checkin-timer" id="checkin-timer">--:--:--</div>
+    </div>
+  `;
+}
+
+function startCountdown(checkedAt) {
+  if (countdownInterval) clearInterval(countdownInterval);
+  const expiresAt = checkedAt
+    ? new Date(checkedAt).getTime() + 24 * 3600 * 1000
+    : Date.now(); // fallback: expired immediately
+  const doTick = () => {
+    const el = document.getElementById('checkin-timer');
+    if (!el) { clearInterval(countdownInterval); return; }
+    const diff = Math.max(0, expiresAt - Date.now());
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (diff === 0) {
+      clearInterval(countdownInterval);
+      renderCheckin(false, null);
+    }
+  };
+  doTick();
+  countdownInterval = setInterval(doTick, 1000);
+}
+
+// ── NEWS CAROUSEL ─────────────────────────────────────────
+
+let newsCarouselIndex = 0;
+let newsCarouselTotal = 0;
+let newsCarouselTimer = null;
+
+async function loadNews() {
+  const track = document.getElementById('news-track');
+  const dots  = document.getElementById('news-dots');
+  if (!track) return;
+  try {
+    const { news } = await syd.newsLatest();
+    if (!news || !news.length) {
+      track.innerHTML = '<div class="news-card"><div class="news-empty">Sin noticias hoy. Vuelve mañana.</div></div>';
+      return;
+    }
+    // Marcar Briefing como completado (hay noticias hoy)
+    markLoopStep('loop-news', null);
+    newsCarouselTotal = news.length;
+    newsCarouselIndex = 0;
+
+    track.innerHTML = news.map((n, i) => `
+      <div class="news-card">
+        <div class="news-card-header">
+          <div class="news-num">${i + 1}</div>
+          <div class="news-card-title">
+            ${n.url ? `<a href="${n.url}" target="_blank" rel="noopener">${n.title}</a>` : n.title}
+          </div>
+        </div>
+        ${n.summary ? `<div class="news-card-summary">${n.summary}</div>` : ''}
+      </div>
+    `).join('');
+
+    if (dots) {
+      dots.innerHTML = news.map((_, i) =>
+        `<div class="news-dot${i === 0 ? ' active' : ''}" id="ndot-${i}"></div>`
+      ).join('');
+    }
+
+    startNewsCarousel();
+  } catch {
+    track.innerHTML = '<div class="news-card"><div class="news-empty">No se pudieron cargar las noticias.</div></div>';
+  }
+}
+
+function goToNewsSlide(idx) {
+  newsCarouselIndex = ((idx % newsCarouselTotal) + newsCarouselTotal) % newsCarouselTotal;
+  const track = document.getElementById('news-track');
+  if (track) track.style.transform = `translateX(-${newsCarouselIndex * 100}%)`;
+  document.querySelectorAll('.news-dot').forEach((d, i) => d.classList.toggle('active', i === newsCarouselIndex));
+}
+
+function startNewsCarousel() {
+  if (newsCarouselTimer) clearInterval(newsCarouselTimer);
+  // Avanza cada 5 segundos con transición lenta (.7s definida en CSS)
+  newsCarouselTimer = setInterval(() => goToNewsSlide(newsCarouselIndex + 1), 5000);
+}
+
+// ── RECENT MISSIONS ───────────────────────────────────────
+
+async function loadRecent() {
+  const list = document.getElementById('recent-list');
+  if (!list) return;
+  try {
+    const { recent } = await syd.recentProgress();
+    if (!recent || !recent.length) {
+      list.innerHTML = '<div class="recent-empty">Aún no has completado ninguna lección. <a href="/syd/missions.html" style="color:var(--pole-color)">Empezar →</a></div>';
+      return;
+    }
+    // Marcar Lección como completada si hay alguna de hoy
+    const todayStr = new Date().toISOString().split('T')[0];
+    const hasToday = recent.some(r => r.end_time && r.end_time.split('T')[0] === todayStr);
+    if (hasToday) markLoopStep('loop-lesson', 'loop-div-2');
+
+    list.innerHTML = recent.map(r => `
+      <div class="recent-item">
+        <div class="recent-check">✓</div>
+        <div class="recent-info">
+          <div class="recent-sub-name">${r.submission_name}</div>
+          <div class="recent-mission-name">${r.mission_name}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+          <div class="recent-xp">+${r.reward_xp} XP · 🪙 +${r.reward_xp} BRT</div>
+          <div class="recent-time">${timeAgo(r.end_time)}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    list.innerHTML = '<div class="recent-empty">Error cargando historial.</div>';
+  }
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 60) return m <= 1 ? 'hace un momento' : `hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `hace ${h}h`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'ayer' : `hace ${d} días`;
+}
+
+// ── DAILY LOOP TRACKER ────────────────────────────────────
+
+function markLoopStep(stepId, divId) {
+  const step = document.getElementById(stepId);
+  if (step) step.classList.add('done');
+  if (divId) {
+    const div = document.getElementById(divId);
+    if (div) div.classList.add('done');
+  }
+  // Mobile pills
+  const pillMap = { 'loop-news': 'mpill-news', 'loop-trade': 'mpill-trade', 'loop-lesson': 'mpill-lesson' };
+  const pillId = pillMap[stepId];
+  if (pillId) {
+    const pill = document.getElementById(pillId);
+    if (pill) pill.classList.add('done');
+    const check = document.getElementById(pillId + '-check');
+    if (check) check.textContent = '✓';
+  }
+  checkLoopComplete();
+}
+
+function checkLoopComplete() {
+  const allDone = ['loop-news', 'loop-trade', 'loop-lesson']
+    .every(id => document.getElementById(id)?.classList.contains('done'));
+  const banner = document.getElementById('loop-complete');
+  if (banner) banner.classList.toggle('show', allDone);
+}
+
+async function checkTradeStatus() {
+  try {
+    const { trades } = await syd.wishTradeToday();
+    if (trades && Object.keys(trades).length > 0) markLoopStep('loop-trade', 'loop-div-1');
+  } catch {}
+}
+
+// ── LECCIÓN DEL DÍA ──────────────────────────────────────
+
+let currentLesson = null;
+
+async function loadLesson() {
+  const wrap = document.getElementById('lesson-card-wrap');
+  if (!wrap) return;
+  try {
+    const { submission } = await syd.nextLesson();
+    currentLesson = submission;
+    if (!submission) {
+      wrap.innerHTML = `<div class="lesson-card"><div class="lesson-all-done">✨ ¡Todo completado en tu polo! Explora otros polos en <a href="/syd/missions.html" style="color:var(--pole-color)">Aprende</a>.</div></div>`;
+      markLoopStep('loop-lesson', 'loop-div-2');
+      return;
+    }
+    wrap.innerHTML = renderLessonCard(submission);
+  } catch {
+    wrap.innerHTML = `<div class="lesson-card"><div class="lesson-all-done" style="color:var(--muted)">No se pudo cargar la lección.</div></div>`;
+  }
+}
+
+function renderLessonCard(s) {
+  const tips = Array.isArray(s.tips) ? s.tips.slice(0, 2) : [];
+  const opts = Array.isArray(s.quiz_options) ? s.quiz_options : [];
+
+  const tipsHtml = tips.length
+    ? `<ul class="lesson-tips">${tips.map(t => `<li>${t}</li>`).join('')}</ul>`
+    : '';
+
+  const quizHtml = s.quiz_question && opts.length
+    ? `<div class="lesson-divider"></div>
+       <div class="lesson-quiz-q">${s.quiz_question}</div>
+       <div class="lesson-opts" id="lesson-opts">
+         ${opts.map((o, i) => `
+           <button class="lesson-opt" onclick="answerLesson(this,${i},${!!o.correct})">${o.text}</button>
+         `).join('')}
+       </div>
+       <div class="lesson-feedback" id="lesson-fb"></div>
+       <button class="btn-complete-lesson" id="btn-complete-lesson"
+         onclick="completeLesson(${s.id}, ${s.mission_id}, ${s.reward_xp})">
+         +${s.reward_xp} XP · 🪙 +${s.reward_xp} BRT — Completar
+       </button>`
+    : `<button class="btn-complete-lesson" id="btn-complete-lesson" style="display:block"
+         onclick="completeLesson(${s.id}, ${s.mission_id}, ${s.reward_xp})">
+         +${s.reward_xp} XP · 🪙 +${s.reward_xp} BRT — Completar
+       </button>`;
+
+  return `
+    <div class="lesson-card">
+      <div class="lesson-card-header">
+        <div class="lesson-breadcrumb">${s.campaign_name} › ${s.mission_name}</div>
+        <div class="lesson-title">${s.name}</div>
+      </div>
+      <div class="lesson-body">
+        ${s.content ? `<div class="lesson-content">${s.content}</div>` : ''}
+        ${tipsHtml}
+        ${quizHtml}
+      </div>
+    </div>
+  `;
+}
+
+function answerLesson(btn, optIdx, isCorrect) {
+  const opts = document.querySelectorAll('.lesson-opt');
+  opts.forEach(b => b.disabled = true);
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('lesson-fb');
+  if (isCorrect) {
+    if (fb) { fb.textContent = '✓ ¡Correcto!'; fb.className = 'lesson-feedback ok'; }
+    const completeBtn = document.getElementById('btn-complete-lesson');
+    if (completeBtn) completeBtn.style.display = 'block';
+  } else {
+    opts.forEach(b => b.disabled = false);
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    if (fb) { fb.textContent = '✗ No es correcto. Inténtalo de nuevo.'; fb.className = 'lesson-feedback fail'; }
+  }
+}
+
+async function completeLesson(subId, missionId, xp) {
+  const btn = document.getElementById('btn-complete-lesson');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    const res = await syd.completeSubmission({ mission_id: missionId, submission_id: subId });
+    if (res.xp_earned) {
+      user.xp = (user.xp || 0) + res.xp_earned;
+      user.bertcoins = (user.bertcoins || 0) + (res.coins_earned || 0);
+      updateXPDisplay();
+      showToast(`+${res.xp_earned} XP · 🪙 +${res.coins_earned || 0} BRT`);
+    }
+    markLoopStep('loop-lesson', 'loop-div-2');
+    // Cargar la siguiente lección
+    await loadLesson();
+  } catch {
+    if (btn) { btn.disabled = false; btn.textContent = `+${xp} XP — Completar`; }
+  }
+}
+
+// ── XP DISPLAY ────────────────────────────────────────────
+
+function updateXPDisplay() {
+  const { level, progress } = xpToLevel(user.xp);
+  const el = id => document.getElementById(id);
+  if (el('xp-val'))   el('xp-val').textContent  = `XP: ${user.xp}`;
+  if (el('lvl-val'))  el('lvl-val').textContent  = `Nivel ${level}`;
+  if (el('xp-fill'))  el('xp-fill').style.width  = progress + '%';
+  if (el('lvl-num'))  el('lvl-num').textContent   = 'Nv. ' + level;
+  if (el('xp-next'))  el('xp-next').textContent   = `${progress}/100 XP al siguiente`;
+  if (el('coin-val')) el('coin-val').textContent  = user.bertcoins || 0;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('xp-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── REFERRAL ─────────────────────────────────────────────
+
+let refLink = '';
+
+async function loadReferral() {
+  try {
+    const data = await syd.referrals();
+    if (!data?.ref_code) return;
+    refLink = `https://bertcrypto.com/syd/register.html?ref=${data.ref_code}`;
+    const card = document.getElementById('ref-card');
+    const codeEl = document.getElementById('ref-code-display');
+    const countEl = document.getElementById('ref-count-display');
+    if (!card) return;
+    codeEl.textContent = data.ref_code;
+    if (data.count > 0) {
+      countEl.innerHTML = `<strong>${data.count}</strong> amigo${data.count > 1 ? 's' : ''} invitado${data.count > 1 ? 's' : ''} · 🎉 +${data.count * 50} BRT ganados`;
+    } else {
+      countEl.textContent = 'Aún no has invitado a nadie. ¡Sé el primero!';
+    }
+    card.style.display = 'flex';
+  } catch { /* silencioso */ }
+}
+
+async function copyRefHome() {
+  const btn = document.getElementById('btn-copy-ref-home');
+  try {
+    await navigator.clipboard.writeText(refLink);
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => { btn.textContent = '📋 Copiar enlace'; }, 2000);
+  } catch {
+    // fallback: seleccionar el código
+    const el = document.getElementById('ref-code-display');
+    if (el) { const r = document.createRange(); r.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

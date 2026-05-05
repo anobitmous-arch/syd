@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Registro — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+
+  nav{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-back{color:var(--muted);font-size:.9rem;display:flex;align-items:center;gap:6px}
+  .nav-back:hover{color:var(--text)}
+
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+
+  /* STEP CONTAINER */
+  .step-wrap{width:100%;max-width:480px}
+  .step{display:none}
+  .step.active{display:block}
+
+  /* PROGRESS BAR */
+  .progress-bar{display:flex;gap:8px;margin-bottom:32px;align-items:center}
+  .prog-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s,transform .3s}
+  .prog-dot.done{background:var(--green)}
+  .prog-dot.active{background:var(--orange);transform:scale(1.4)}
+  .prog-label{color:var(--muted);font-size:.8rem;margin-left:auto}
+
+  h2{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+  .step-sub{color:var(--muted);margin-bottom:28px;font-size:.95rem;line-height:1.5}
+
+  /* FORM */
+  .field{margin-bottom:16px}
+  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:500}
+  input{width:100%;background:#0a1520;border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s}
+  input:focus{border-color:var(--orange)}
+  .btn{display:block;width:100%;padding:13px;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;border:none;transition:opacity .2s}
+  .btn:hover:not(:disabled){opacity:.85}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--orange);color:#070d12}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:10px;font-size:.9rem}
+  .error{color:#ff6b6b;font-size:.85rem;margin-top:10px;display:none}
+
+  /* QUESTIONNAIRE */
+  .q-num{color:var(--orange);font-size:.85rem;font-weight:600;margin-bottom:8px;letter-spacing:.5px}
+  .q-text{font-size:1.2rem;font-weight:700;margin-bottom:24px;line-height:1.4}
+  .q-options{display:flex;flex-direction:column;gap:10px}
+  .q-opt{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s,background .2s;font-size:.95rem;text-align:left;color:var(--text)}
+  .q-opt:hover{border-color:var(--orange);background:rgba(255,159,67,.05)}
+  .q-opt.selected{border-color:var(--orange);background:rgba(255,159,67,.1);color:var(--orange)}
+  .q-nav{display:flex;gap:10px;margin-top:20px}
+  .q-nav .btn{flex:1}
+  .btn-prev{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .btn-next{background:var(--orange);color:#070d12}
+
+  /* RESULT */
+  .pole-result{text-align:center;margin-bottom:32px}
+  .pole-big-icon{font-size:4rem;margin-bottom:12px}
+  .pole-result-name{font-size:1.8rem;font-weight:800;margin-bottom:4px}
+  .pole-result-label{color:var(--muted);margin-bottom:16px}
+  .pole-badge{display:inline-block;border:1px solid;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:600;margin-bottom:24px}
+
+  .avatar-title{font-weight:700;margin-bottom:14px;font-size:1rem}
+  .avatars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+  .av-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:border-color .2s,transform .2s}
+  .av-card:hover{transform:translateY(-2px)}
+  .av-card.selected{border-color:var(--orange)}
+  .av-name{font-weight:600;font-size:.9rem;margin-bottom:3px}
+  .av-trait{color:var(--muted);font-size:.75rem;line-height:1.3}
+
+  /* JARDÍN BANNER */
+  .jardin-banner{background:rgba(46,229,157,.06);border:1px solid rgba(46,229,157,.25);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .2s}
+  .jardin-banner:hover{background:rgba(46,229,157,.1)}
+  .jardin-icon{font-size:2rem;flex-shrink:0}
+  .jardin-text .jardin-title{font-size:.9rem;font-weight:700;color:#2ee59d}
+  .jardin-text .jardin-sub{font-size:.78rem;color:var(--muted);margin-top:2px;line-height:1.4}
+  .jardin-arrow{margin-left:auto;color:#2ee59d;font-size:1.1rem;flex-shrink:0}
+
+  /* LOADING */
+  .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{padding:16px;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <a class="nav-back" href="/syd/">← Volver</a>
+</nav>
+
+<main>
+  <div class="step-wrap">
+
+    <div class="progress-bar">
+      <div class="prog-dot active" id="dot0"></div>
+      <div class="prog-dot" id="dot1"></div>
+      <div class="prog-dot" id="dot2"></div>
+      <span class="prog-label" id="prog-label">Paso 1 de 3</span>
+    </div>
+
+    <!-- STEP 1: Registro -->
+    <div class="step active" id="step-1">
+      <h2>Crear cuenta</h2>
+      <p class="step-sub">Rellena tus datos para empezar. Luego descubrirás tu polo.</p>
+      <div class="field">
+        <label>Nombre de usuario</label>
+        <input id="username" type="text" placeholder="tu_nombre" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+      <div class="error" id="err-1"></div>
+      <button class="btn btn-primary" id="btn-step1" onclick="goStep2()">Continuar →</button>
+      <button class="btn btn-ghost" onclick="location.href='/syd/login.html'">Ya tengo cuenta</button>
+    </div>
+
+    <!-- STEP 2: Cuestionario -->
+    <div class="step" id="step-2">
+      <h2>Descubre tu polo</h2>
+      <p class="step-sub">5 preguntas rápidas para conocer tu perfil financiero.</p>
+      <div class="jardin-banner" onclick="goJardin()">
+        <div class="jardin-icon">🌱</div>
+        <div class="jardin-text">
+          <div class="jardin-title">Soy principiante / tengo menos de 16 años</div>
+          <div class="jardin-sub">Empezaré en el Jardín, donde todo se explica desde cero sin jerga financiera.</div>
+        </div>
+        <div class="jardin-arrow">→</div>
+      </div>
+      <div id="question-box"></div>
+      <div class="q-nav">
+        <button class="btn btn-prev" id="btn-prev" onclick="prevQ()">← Anterior</button>
+        <button class="btn btn-next" id="btn-next" onclick="nextQ()">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Resultado + Avatar -->
+    <div class="step" id="step-3">
+      <h2>Tu polo</h2>
+      <p class="step-sub">Basándonos en tus respuestas, este es tu perfil financiero.</p>
+      <div class="pole-result" id="pole-result"></div>
+      <div class="avatar-title">Elige tu avatar</div>
+      <div class="avatars-grid" id="avatars-grid"></div>
+      <div class="error" id="err-3"></div>
+      <button class="btn btn-primary" id="btn-finish" onclick="finish()" disabled>Empezar mi camino →</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>¿Ya tienes cuenta? <a href="/syd/login.html">Inicia sesión</a></footer>
+
+<script src="/syd/syd.js"></script>
+<script>
+redirectIfAuth('/syd/home.html');
+
+// Guardar ref code de la URL en localStorage
+(function() {
+  const ref = new URLSearchParams(location.search).get('ref');
+  if (ref) localStorage.setItem('syd_ref', ref.toUpperCase());
+})();
+
+// ── QUESTIONNAIRE DATA ──
+const questions = [
+  {
+    text: '¿Cómo describirías tu relación con el dinero ahora mismo?',
+    opts: [
+      { text: 'Me cuesta llegar a fin de mes o no tengo aún un colchón de ahorro claro.', pole: 1 },
+      { text: 'Controlo mis gastos y quiero empezar a hacer crecer lo que ahorro.', pole: 2 },
+      { text: 'Me interesan la cripto, la tecnología financiera y las nuevas oportunidades de mercado.', pole: 3 },
+      { text: 'He construido algo y quiero protegerlo, planificarlo y dejarlo en orden.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Escuchas que la inflación está reduciendo el valor de tus ahorros. ¿Qué te pasa por la cabeza?',
+    opts: [
+      { text: 'Primero necesito un fondo de emergencia sólido antes de pensar en moverme.', pole: 1 },
+      { text: 'Es una señal para invertir en activos que superen la inflación a largo plazo.', pole: 2 },
+      { text: 'Busco sectores o activos que históricamente se benefician de este entorno.', pole: 3 },
+      { text: 'Redistribuiría hacia activos más defensivos: oro, inmuebles o renta fija.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Cuando piensas en mejorar tu situación económica, ¿qué imagen te viene?',
+    opts: [
+      { text: 'Salir de deudas, controlar mis gastos y construir hábitos financieros sanos.', pole: 1 },
+      { text: 'Entender cómo funcionan los mercados y dónde poner el dinero para que crezca.', pole: 2 },
+      { text: 'Explorar activos digitales, nuevas tecnologías y oportunidades que otros aún no ven.', pole: 3 },
+      { text: 'Proteger mi patrimonio, optimizar impuestos y planificar el futuro de mi familia.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Tienes 5.000€ que no necesitas en los próximos 2 años. ¿Qué haces?',
+    opts: [
+      { text: 'Los dejo en una cuenta de ahorro de alta rentabilidad — prefiero seguridad.', pole: 1 },
+      { text: 'Los invierto en un ETF global diversificado y no los toco en 10 años.', pole: 2 },
+      { text: 'Invierto una parte en cripto u otros activos de alto potencial con horizonte de 1-3 años.', pole: 3 },
+      { text: 'Los distribuyo entre activos defensivos: oro, bonos o una pequeña posición en inmueble.', pole: 4 },
+    ]
+  },
+  {
+    text: 'Para ti, la libertad financiera significa sobre todo...',
+    opts: [
+      { text: 'No deber nada y tener un fondo que me permita dormir tranquilo cada noche.', pole: 1 },
+      { text: 'Que mis inversiones generen lo suficiente para no depender de un salario fijo.', pole: 2 },
+      { text: 'Tener opciones reales: poder elegir proyectos, lugares y ritmos de vida sin restricciones económicas.', pole: 3 },
+      { text: 'Haber construido un patrimonio sólido que proteja a mi familia hoy y mañana.', pole: 4 },
+    ]
+  },
+];
+
+const POLE_META = {
+  1: { name: 'Norte', icon: '🦙', label: 'Ahorro & Bases', color: 'var(--green)', desc: 'Tu camino empieza por los fundamentos: presupuesto claro, deudas bajo control y un colchón de emergencia. Sin esas bases, todo lo demás es construir sobre arena. Estás en el lugar correcto.' },
+  2: { name: 'Sur',   icon: '🦅', label: 'Inversión & Crecimiento', color: 'var(--blue)', desc: 'Tienes las bases y quieres que tu dinero trabaje sin que tú estés pendiente. Interés compuesto, ETFs, largo plazo — la paciencia es la estrategia más infravalorada del mundo.' },
+  3: { name: 'Este',  icon: '🐯', label: 'Innovación & Mercados', color: 'var(--orange)', desc: 'Eres curioso sobre nuevas tecnologías, cripto y oportunidades emergentes. Buscas el movimiento antes de que sea obvio. Aquí aprenderás a distinguir el ruido de la señal real.' },
+  4: { name: 'Oeste', icon: '🦉', label: 'Seguridad & Patrimonio', color: 'var(--purple)', desc: 'Has construido algo que vale la pena proteger y planificar. Tu foco está en preservar, diversificar con criterio y pensar en el legado. La sabiduría financiera incluye saber cuándo no moverse.' },
+  5: { name: 'Jardín', icon: '🌱', label: 'Primeros pasos', color: 'var(--green)', desc: 'Aquí todo se explica desde cero, con palabras simples y sin jerga financiera. Aprenderás qué es el dinero, cómo ahorrarlo y cómo tomar buenas decisiones. El mejor punto de partida para cualquier edad.' },
+};
+
+let currentQ = 0;
+let answers = []; // {pole: N} per question
+let formData = {};
+let selectedAvatarId = null;
+let resultPoleId = null;
+
+function setDots(step) {
+  [0,1,2].forEach((i,idx) => {
+    const d = document.getElementById('dot'+i);
+    d.className = 'prog-dot' + (idx < step ? ' done' : idx === step ? ' active' : '');
+  });
+  document.getElementById('prog-label').textContent = `Paso ${step+1} de 3`;
+}
+
+// ── STEP 1 ──
+function goStep2() {
+  const u = document.getElementById('username').value.trim();
+  const e = document.getElementById('email').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('err-1');
+  if (!u || !e || !p) return showError(err, 'Completa todos los campos.');
+  if (p.length < 6) return showError(err, 'La contraseña debe tener al menos 6 caracteres.');
+  if (!e.includes('@')) return showError(err, 'Email inválido.');
+  hideError(err);
+  const savedRef = localStorage.getItem('syd_ref');
+  formData = { username: u, email: e, password: p, ...(savedRef ? { ref_code: savedRef } : {}) };
+  document.getElementById('step-1').classList.remove('active');
+  document.getElementById('step-2').classList.add('active');
+  setDots(1);
+  renderQuestion();
+}
+
+// ── STEP 2: QUESTIONNAIRE ──
+function renderQuestion() {
+  const q = questions[currentQ];
+  const box = document.getElementById('question-box');
+  const saved = answers[currentQ]?.pole;
+  box.innerHTML = `
+    <div class="q-num">PREGUNTA ${currentQ + 1} / ${questions.length}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-options">
+      ${q.opts.map((o, i) => `
+        <button class="q-opt${saved === o.pole ? ' selected' : ''}"
+          onclick="selectOpt(this, ${o.pole})">${o.text}</button>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('btn-prev').style.visibility = currentQ > 0 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').textContent = currentQ < questions.length - 1 ? 'Siguiente →' : 'Ver resultado →';
+}
+
+function selectOpt(el, pole) {
+  el.closest('.q-options').querySelectorAll('.q-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[currentQ] = { pole };
+}
+
+function nextQ() {
+  if (!answers[currentQ]) {
+    const box = document.getElementById('question-box');
+    let msg = box.querySelector('.q-err');
+    if (!msg) { msg = document.createElement('p'); msg.className = 'q-err'; msg.style.cssText = 'color:#ff6b6b;font-size:.85rem;margin-top:10px'; box.appendChild(msg); }
+    msg.textContent = 'Selecciona una opción para continuar.';
+    return;
+  }
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+// ── JARDÍN: saltar cuestionario y asignar polo 5 ──
+function goJardin() {
+  resultPoleId = 5;
+  document.getElementById('step-2').classList.remove('active');
+  document.getElementById('step-3').classList.add('active');
+  setDots(2);
+
+  const m = POLE_META[5];
+  document.getElementById('pole-result').innerHTML = `
+    <div class="pole-big-icon">${m.icon}</div>
+    <div class="pole-result-name" style="color:${m.color}">${m.name}</div>
+    <div class="pole-result-label">${m.label}</div>
+    <div class="pole-badge" style="border-color:${m.color};color:${m.color}">Tu polo</div>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.5;max-width:360px;margin:0 auto">${m.desc}</p>
+  `;
+  loadAvatars(5);
+}
+
+// ── STEP 3: RESULT ──
+function showResult() {
+  // Count votes per pole
+  const counts = {1:0, 2:0, 3:0, 4:0};
+  answers.forEach(a => counts[a.pole]++);
+  resultPoleId = parseInt(Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+
+  document.getElementById('step-2').classList.remove('active');
+  document.getElementById('step-3').classList.add('active');
+  setDots(2);
+
+  const m = POLE_META[resultPoleId];
+  document.getElementById('pole-result').innerHTML = `
+    <div class="pole-big-icon">${m.icon}</div>
+    <div class="pole-result-name" style="color:${m.color}">${m.name}</div>
+    <div class="pole-result-label">${m.label}</div>
+    <div class="pole-badge" style="border-color:${m.color};color:${m.color}">Tu polo</div>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.5;max-width:360px;margin:0 auto">${m.desc}</p>
+  `;
+
+  loadAvatars(resultPoleId);
+}
+
+async function loadAvatars(poleId) {
+  const grid = document.getElementById('avatars-grid');
+  grid.innerHTML = '<div class="spinner"></div> Cargando avatares...';
+  try {
+    const data = await syd.poles();
+    const pole = data.find(p => p.id === poleId);
+    const visible = (pole?.avatars || []).filter(a => a.is_visible);
+    grid.innerHTML = visible.map(a => `
+      <div class="av-card" onclick="pickAvatar(this, ${a.id})" data-id="${a.id}">
+        <div class="av-name">${a.name}</div>
+        <div class="av-trait">${a.financial_trait}</div>
+        ${a.country ? `<div style="color:var(--muted);font-size:.7rem;margin-top:4px">${a.country}</div>` : ''}
+      </div>
+    `).join('');
+  } catch {
+    grid.innerHTML = '<p style="color:var(--muted)">Error cargando avatares.</p>';
+  }
+}
+
+function pickAvatar(el, id) {
+  document.querySelectorAll('.av-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedAvatarId = id;
+  document.getElementById('btn-finish').disabled = false;
+}
+
+// ── FINISH ──
+async function finish() {
+  const btn = document.getElementById('btn-finish');
+  const err = document.getElementById('err-3');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creando cuenta...';
+  hideError(err);
+
+  try {
+    await syd.register(formData);
+    localStorage.removeItem('syd_ref');
+    await syd.selectPole({ pole_id: resultPoleId, avatar_id: selectedAvatarId });
+    location.href = '/syd/home.html';
+  } catch (e) {
+    showError(err, e.message || 'Error al crear la cuenta.');
+    btn.disabled = false;
+    btn.textContent = 'Empezar mi camino →';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYD — Trading School</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <a href="/" style="text-decoration:none;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:4px;margin-bottom:4px;opacity:.7;transition:opacity .15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">← BertCrypto</a>
+      <h1>SYD — Trading School</h1>
+      <p class="subtitle">Viewer de lecciones</p>
+    </div>
+    <div class="actions">
+      <button id="reloadBtn" class="btn btn-accent">↺ Recargar</button>
+      <a class="btn btn-ghost" href="/api/lecciones" target="_blank" rel="noreferrer">JSON</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="search">
+        <input id="searchInput" placeholder="Buscar lección…" autocomplete="off" />
+      </div>
+      <div id="levels" class="levels"></div>
+    </aside>
+
+    <section class="content">
+      <div id="status" class="status">Cargando…</div>
+      <div id="lesson" class="lesson"></div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    API: <code>/api/lecciones</code> · <code>/api/health</code>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

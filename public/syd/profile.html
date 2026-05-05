@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi perfil — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5;--pole-color:var(--orange)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:800px;margin:0 auto;padding:0 20px}
+
+  nav{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:20px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.85rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+  .nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--pole-color)}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+
+  .page{padding:32px 0 60px}
+
+  /* HERO CARD */
+  .hero-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .av-circle{width:72px;height:72px;border-radius:50%;border:3px solid var(--pole-color);display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:rgba(255,159,67,.08);flex-shrink:0}
+  .hero-info{flex:1}
+  .hero-name{font-size:1.4rem;font-weight:800}
+  .hero-sub{color:var(--muted);margin-top:4px;font-size:.9rem}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .badge{display:inline-block;border:1px solid;border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:600}
+  .hero-xp{min-width:180px}
+  .xp-row{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px}
+  .xp-bar{background:var(--border);border-radius:4px;height:8px;overflow:hidden}
+  .xp-fill{height:100%;border-radius:4px;background:var(--pole-color);transition:width .8s ease}
+
+  /* STATS GRID */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+  .stat-num{font-size:1.8rem;font-weight:800;margin-bottom:4px}
+  .stat-label{color:var(--muted);font-size:.8rem}
+
+  /* PROGRESS BY CAMPAIGN */
+  .section-title{font-size:1.1rem;font-weight:700;margin-bottom:14px}
+  .prog-list{display:flex;flex-direction:column;gap:10px}
+  .prog-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .prog-name{font-weight:600;font-size:.9rem}
+  .prog-pct{font-size:.82rem;color:var(--muted)}
+  .prog-bar{background:var(--border);border-radius:4px;height:5px}
+  .prog-fill{height:100%;border-radius:4px;background:var(--pole-color)}
+
+  /* HISTORY */
+  .history-list{display:flex;flex-direction:column;gap:6px;margin-top:20px}
+  .hist-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+  .hist-icon{font-size:1rem;flex-shrink:0}
+  .hist-info{flex:1;font-size:.85rem}
+  .hist-sub{color:var(--muted);font-size:.78rem;margin-top:1px}
+  .hist-xp{color:var(--green);font-weight:700;font-size:.82rem;white-space:nowrap}
+
+  /* REFERRAL SECTION */
+  .referral-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:24px}
+  .referral-code{font-size:1.8rem;font-weight:900;letter-spacing:.15em;color:var(--pole-color);margin:10px 0}
+  .referral-link{font-size:.78rem;color:var(--muted);word-break:break-all;margin-bottom:14px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+  .btn-copy-ref{padding:10px 20px;border-radius:8px;background:var(--pole-color);color:#070d12;font-weight:700;font-size:.88rem;border:none;cursor:pointer;transition:opacity .15s}
+  .btn-copy-ref:hover{opacity:.85}
+  .referral-count{color:var(--muted);font-size:.85rem;margin-top:12px}
+  .referral-count strong{color:var(--text)}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:60px;color:var(--muted)}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:600px){.hero-card{flex-direction:column;align-items:flex-start}.hero-xp{width:100%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <div class="nav-links">
+    <a class="nav-link" href="/syd/home.html">Home</a>
+    <a class="nav-link" href="/syd/missions.html">Aprende</a>
+    <a class="nav-link" href="/syd/community.html">Comunidad</a>
+    <a class="nav-link active" href="/syd/profile.html">Perfil</a>
+    <a class="nav-link" href="/syd/wish-trade.html">Wish-Trade</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</nav>
+
+<div class="wrap page">
+  <div id="loading" class="loading-wrap"><div class="spinner"></div><div>Cargando perfil...</div></div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script src="/syd/syd.js"></script>
+<script>
+let currentUser = null;
+
+async function doLogout() {
+  await syd.logout().catch(()=>{});
+  location.href = '/syd/';
+}
+
+function timeAgo(ts) {
+  const diff = (Date.now() - new Date(ts)) / 1000;
+  if (diff < 60) return 'hace un momento';
+  if (diff < 3600) return `hace ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff/3600)}h`;
+  return `hace ${Math.floor(diff/86400)}d`;
+}
+
+async function init() {
+  currentUser = await requireAuth('/syd/login.html');
+  if (!currentUser) return;
+
+  const m = poleById(currentUser.pole_id);
+  document.documentElement.style.setProperty('--pole-color', m.color);
+
+  // Load progress, pole data and referral info in parallel
+  const [progress, poleData, referralData] = await Promise.all([
+    syd.progress().catch(() => []),
+    currentUser.pole_id ? syd.pole(currentUser.pole_id).catch(() => null) : Promise.resolve(null),
+    syd.referrals().catch(() => null),
+  ]);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  renderProfile(progress, poleData, referralData);
+}
+
+async function renderProfile(progress, poleData, referralData) {
+  const m = poleById(currentUser.pole_id);
+  const { level, progress: xpProgress } = xpToLevel(currentUser.xp || 0);
+
+  // Stats
+  const totalSubs = progress.length;
+  const totalXP = currentUser.xp || 0;
+  const uniqueMissions = new Set(progress.map(p => p.mission_id)).size;
+  const memberSince = currentUser.created_at
+    ? new Date(currentUser.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })
+    : 'Hoy';
+
+  // Campaign progress
+  let campProgress = [];
+  if (poleData?.campaigns?.length) {
+    // Fetch all missions per campaign to calculate % complete
+    const campData = await Promise.all(
+      poleData.campaigns.map(c => syd.campaign(c.id).catch(() => ({ missions: [] })))
+    );
+    campProgress = poleData.campaigns.map((c, i) => {
+      const missions = campData[i].missions || [];
+      const missionIds = missions.map(m => m.id);
+      const done = new Set(progress.filter(p => missionIds.includes(p.mission_id)).map(p => p.mission_id)).size;
+      return { name: c.name, done, total: missions.length };
+    }).filter(c => c.total > 0);
+  }
+
+  // Recent history (last 10)
+  const recent = [...progress].sort((a,b) => new Date(b.end_time) - new Date(a.end_time)).slice(0, 10);
+
+  document.getElementById('content').innerHTML = `
+    <!-- HERO -->
+    <div class="hero-card">
+      <div class="av-circle" style="border-color:${m.color}">${m.icon}</div>
+      <div class="hero-info">
+        <div class="hero-name">${currentUser.avatar_name || 'Sin avatar'}</div>
+        <div class="hero-sub">${currentUser.username} · Miembro desde ${memberSince}</div>
+        <div class="badges">
+          <span class="badge" style="border-color:${m.color};color:${m.color}">Polo ${m.name}</span>
+          <span class="badge" style="border-color:rgba(255,255,255,.15);color:var(--muted)">Nivel ${level}</span>
+          ${totalSubs >= 10 ? `<span class="badge" style="border-color:var(--green);color:var(--green)">10 misiones ✓</span>` : ''}
+          ${totalSubs >= 25 ? `<span class="badge" style="border-color:var(--blue);color:var(--blue)">25 misiones ✓</span>` : ''}
+        </div>
+      </div>
+      <div class="hero-xp">
+        <div class="xp-row">
+          <span style="color:var(--muted);font-size:.82rem">XP Total</span>
+          <span style="font-weight:700">${totalXP} XP</span>
+        </div>
+        <div class="xp-bar"><div class="xp-fill" style="width:${xpProgress}%;background:${m.color}"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:.75rem;color:var(--muted)">
+          <span>Nivel ${level}</span>
+          <span>${xpProgress}/100 → Nivel ${level + 1}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" style="color:${m.color}">${totalXP}</div>
+        <div class="stat-label">XP acumulado</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--green)">${totalSubs}</div>
+        <div class="stat-label">Submissions completadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--blue)">${uniqueMissions}</div>
+        <div class="stat-label">Misiones iniciadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--purple)">${level}</div>
+        <div class="stat-label">Nivel actual</div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGN PROGRESS -->
+    ${campProgress.length ? `
+    <button class="syd-m-section-toggle" onclick="toggleSection(this,'prog-collapse')">
+      <span>Progreso por campaña</span><span class="syd-m-section-arrow">›</span>
+    </button>
+    <div class="section-title syd-m-hidden">Progreso por campaña</div>
+    <div class="prog-list syd-m-collapsible" id="prog-collapse">
+      ${campProgress.map(c => {
+        const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
+        return `
+          <div class="prog-row">
+            <div class="prog-top">
+              <div class="prog-name">${c.name}</div>
+              <div class="prog-pct">${c.done}/${c.total} misiones · ${pct}%</div>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${m.color}"></div></div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    ` : ''}
+
+    <!-- RECENT ACTIVITY -->
+    ${recent.length ? `
+    <button class="syd-m-section-toggle" onclick="toggleSection(this,'activity-collapse')" style="margin-top:16px">
+      <span>Actividad reciente</span><span class="syd-m-section-arrow">›</span>
+    </button>
+    <div class="section-title syd-m-hidden" style="margin-top:24px">Actividad reciente</div>
+    <div class="history-list syd-m-collapsible" id="activity-collapse">
+      ${recent.map(p => `
+        <div class="hist-item">
+          <div class="hist-icon">✅</div>
+          <div class="hist-info">
+            <div>${p.submission_name}</div>
+            <div class="hist-sub">${p.mission_name} · ${timeAgo(p.end_time)}</div>
+          </div>
+          <div class="hist-xp">+${p.reward_xp || 0} XP</div>
+        </div>
+      `).join('')}
+    </div>
+    ` : `<div style="color:var(--muted);text-align:center;padding:30px">Completa tu primera misión para ver el historial.</div>`}
+
+    <!-- REFERRAL SECTION -->
+    ${referralData?.ref_code ? `
+    <div class="referral-card">
+      <div class="section-title">🎁 Invita a un amigo</div>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">
+        Comparte tu código. Cuando tu amigo haga su primer check-in,
+        <strong style="color:var(--text)">ambos ganáis 50 BRT</strong>.
+      </p>
+      <div class="referral-code">${referralData.ref_code}</div>
+      <div class="referral-link">https://bertcrypto.com/syd/register.html?ref=${referralData.ref_code}</div>
+      <button class="btn-copy-ref" onclick="copyRefLink('https://bertcrypto.com/syd/register.html?ref=${referralData.ref_code}', this)">
+        📋 Copiar enlace
+      </button>
+      <div class="referral-count">
+        Amigos invitados: <strong>${referralData.count || 0}</strong>
+        ${referralData.count > 0 ? `· 🎉 +${referralData.count * 50} BRT ganados` : ''}
+      </div>
+    </div>
+    ` : ''}
+  `;
+}
+
+function toggleSection(btn, contentId) {
+  const content = document.getElementById(contentId);
+  if (!content) return;
+  const open = content.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+async function copyRefLink(url, btn) {
+  try {
+    await navigator.clipboard.writeText(url);
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => { btn.textContent = '📋 Copiar enlace'; }, 2000);
+  } catch {
+    // fallback: select text
+    const el = btn.previousElementSibling;
+    if (el) { const r = document.createRange(); r.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

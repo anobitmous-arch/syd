@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Iniciar sesión — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  a{color:var(--muted);text-decoration:none}a:hover{color:var(--text)}
+
+  nav{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-back{color:var(--muted);font-size:.9rem}
+
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+
+  .box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:36px;width:100%;max-width:400px}
+  h2{font-size:1.5rem;font-weight:800;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:28px;font-size:.9rem}
+
+  .field{margin-bottom:16px}
+  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:500}
+  input{width:100%;background:#0a1520;border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s}
+  input:focus{border-color:var(--orange)}
+
+  .btn{display:block;width:100%;padding:13px;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;border:none;transition:opacity .2s;margin-top:4px}
+  .btn:hover:not(:disabled){opacity:.85}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--orange);color:#070d12}
+
+  .error{color:#ff6b6b;font-size:.85rem;margin-top:10px;display:none}
+  .footer-link{text-align:center;margin-top:20px;font-size:.9rem}
+
+  .spinner{width:18px;height:18px;border:2px solid rgba(7,13,18,.3);border-top-color:#070d12;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{padding:16px;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <a class="nav-back" href="/syd/">← Volver</a>
+</nav>
+
+<main>
+  <div class="box">
+    <h2>Bienvenido de nuevo</h2>
+    <p class="sub">Inicia sesión para continuar tu camino.</p>
+
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="tu@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="error" id="err"></div>
+    <button class="btn btn-primary" id="btn-login" onclick="doLogin()">Iniciar sesión</button>
+
+    <div class="footer-link">¿No tienes cuenta? <a href="/syd/register.html" style="color:var(--orange)">Regístrate gratis</a></div>
+    <div class="footer-link" style="margin-top:8px"><a href="/syd/forgot.html" style="color:var(--muted);font-size:.85rem">¿Olvidaste tu contraseña?</a></div>
+  </div>
+</main>
+
+<footer><a href="/">BertCrypto</a> · <a href="/syd/">SeedYourDreams</a></footer>
+
+<script src="/syd/syd.js"></script>
+<script>
+redirectIfAuth('/syd/home.html');
+
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('err');
+  const btn = document.getElementById('btn-login');
+
+  if (!email || !password) return showError(err, 'Completa todos los campos.');
+  hideError(err);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Entrando...';
+
+  try {
+    await syd.login({ email, password });
+    location.href = '/syd/home.html';
+  } catch (e) {
+    showError(err, e.message || 'Credenciales inválidas.');
+    btn.disabled = false;
+    btn.textContent = 'Iniciar sesión';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aprende — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5;--pole-color:var(--orange)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+
+  /* NAV */
+  nav{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:20px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.85rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+  .nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--pole-color)}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+  .btn-logout:hover{color:var(--text)}
+
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  .page{padding:32px 0 60px}
+
+  /* USER CARD (compact) */
+  .user-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-left:4px solid var(--pole-color)}
+  .av-bubble{width:44px;height:44px;border-radius:50%;background:rgba(255,159,67,.1);border:2px solid var(--pole-color);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+  .user-info{flex:1}
+  .user-name{font-size:1rem;font-weight:700}
+  .user-meta{color:var(--muted);font-size:.82rem;margin-top:2px}
+  .user-pole-badge{display:inline-block;border:1px solid;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:8px;vertical-align:middle}
+  .xp-chip{font-size:.82rem;color:var(--muted);white-space:nowrap}
+  .xp-chip strong{color:var(--text)}
+
+  /* SECTION HEADER */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .section-title{font-size:1.1rem;font-weight:700}
+  .section-sub{color:var(--muted);font-size:.85rem}
+
+  /* CAMPAIGNS */
+  .campaigns-list{display:flex;flex-direction:column;gap:10px}
+  .camp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .camp-header{padding:16px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .2s}
+  .camp-header:hover{background:rgba(255,255,255,.02)}
+  .camp-icon{font-size:1.2rem}
+  .camp-info{flex:1}
+  .camp-name{font-weight:600}
+  .camp-desc{color:var(--muted);font-size:.82rem;margin-top:2px}
+  .camp-arrow{color:var(--muted);font-size:.8rem;transition:transform .2s}
+  .camp-card.open .camp-arrow{transform:rotate(90deg)}
+  .camp-progress-wrap{margin-left:auto;margin-right:10px;font-size:.8rem;color:var(--muted)}
+
+  /* MISSIONS ACCORDION */
+  .missions-body{display:none;border-top:1px solid var(--border);padding:12px 16px;background:rgba(0,0,0,.15)}
+  .camp-card.open .missions-body{display:block}
+  .mission-item{border-radius:8px;border:1px solid transparent}
+  .mission-item.open{border-color:var(--border)}
+  .mission-header{padding:10px 12px;cursor:pointer;transition:background .2s;border-radius:8px;display:flex;flex-direction:column}
+  .mission-header:hover{background:rgba(255,255,255,.03)}
+  .mission-item.open .mission-header{border-radius:8px 8px 0 0}
+  .mission-name{font-weight:600;font-size:.9rem}
+  .mission-meta{color:var(--muted);font-size:.78rem;margin-top:2px}
+
+  /* SUBMISSIONS */
+  .subs-box{margin-top:8px;margin-left:12px;border-left:2px solid var(--border);padding-left:12px}
+  .sub-item{margin-bottom:6px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+  .sub-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;transition:background .2s}
+  .sub-header:hover{background:rgba(255,255,255,.03)}
+  .sub-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem}
+  .sub-check.done{background:var(--green);border-color:var(--green);color:#070d12}
+  .sub-info{flex:1}
+  .sub-name{font-size:.85rem;font-weight:600}
+  .sub-desc{color:var(--muted);font-size:.78rem}
+  .sub-arrow{color:var(--muted);font-size:.75rem;transition:transform .2s}
+  .sub-item.open .sub-arrow{transform:rotate(90deg)}
+
+  /* SUBMISSION CARD */
+  .sub-card{display:none;padding:16px;background:rgba(0,0,0,.2);border-top:1px solid var(--border)}
+  .sub-item.open .sub-card{display:block}
+  .sub-section{margin-bottom:14px}
+  .sub-section-label{font-size:.72rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .sub-content-text{font-size:.88rem;line-height:1.6;color:var(--text)}
+  .tips-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .tips-list li{font-size:.83rem;color:var(--muted);padding-left:16px;position:relative;line-height:1.4}
+  .tips-list li::before{content:"→";position:absolute;left:0;color:var(--pole-color)}
+
+  /* QUIZ */
+  .quiz-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .quiz-opt{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:.84rem;text-align:left;color:var(--text);transition:border-color .2s,background .2s;width:100%}
+  .quiz-opt:hover:not(:disabled){border-color:var(--pole-color);background:rgba(255,255,255,.03)}
+  .quiz-opt.correct{border-color:var(--green)!important;background:rgba(46,229,157,.1)!important;color:var(--green)}
+  .quiz-opt.wrong{border-color:#ff6b6b!important;background:rgba(255,107,107,.08)!important;color:#ff6b6b}
+  .quiz-opt:disabled{cursor:default}
+  .quiz-feedback{font-size:.82rem;font-weight:600;margin-bottom:10px;min-height:18px}
+  .quiz-feedback.ok{color:var(--green)}
+  .quiz-feedback.fail{color:#ff6b6b}
+  .btn-complete{background:var(--pole-color);color:#070d12;border:none;padding:8px 20px;border-radius:7px;cursor:pointer;font-weight:700;font-size:.85rem;transition:opacity .2s;display:none}
+  .btn-complete:hover{opacity:.85}
+  .btn-complete.loading{opacity:.5;cursor:not-allowed}
+  .sub-done-badge{font-size:.78rem;color:var(--green);font-weight:600;display:none}
+
+  /* XP TOAST */
+  .xp-toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#070d12;font-weight:700;padding:10px 18px;border-radius:8px;font-size:.9rem;transform:translateY(80px);opacity:0;transition:all .3s;z-index:100}
+  .xp-toast.show{transform:translateY(0);opacity:1}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:60px;color:var(--muted)}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .empty{text-align:center;padding:40px;color:var(--muted)}
+  .no-pole-banner{background:rgba(255,159,67,.08);border:1px solid rgba(255,159,67,.2);border-radius:12px;padding:20px;margin-bottom:24px;text-align:center}
+  .no-pole-banner p{color:var(--muted);margin-bottom:12px}
+  .btn-setup{display:inline-block;background:var(--orange);color:#070d12;padding:10px 24px;border-radius:8px;font-weight:700;font-size:.9rem}
+
+  @media(max-width:600px){.user-card{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <div class="nav-links">
+    <a class="nav-link" href="/syd/home.html">Home</a>
+    <a class="nav-link active" href="/syd/missions.html">Aprende</a>
+    <a class="nav-link" href="/syd/community.html">Comunidad</a>
+    <a class="nav-link" href="/syd/profile.html">Perfil</a>
+    <a class="nav-link" href="/syd/wish-trade.html">Wish-Trade</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</nav>
+
+<div class="wrap page">
+  <div id="loading" class="loading-wrap">
+    <div class="spinner"></div>
+    <div>Cargando...</div>
+  </div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<div class="xp-toast" id="xp-toast"></div>
+
+<script src="/syd/syd.js"></script>
+<script>
+let user = null;
+let completedSubs = new Set();
+
+async function doLogout() {
+  await syd.logout().catch(() => {});
+  location.href = '/syd/';
+}
+
+async function init() {
+  user = await requireAuth('/syd/login.html');
+  if (!user) return;
+
+  try {
+    const prog = await syd.progress();
+    prog.forEach(p => completedSubs.add(p.submission_id));
+  } catch {}
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  renderMissions();
+}
+
+function renderMissions() {
+  const m = poleById(user.pole_id);
+  const { level } = xpToLevel(user.xp || 0);
+  document.documentElement.style.setProperty('--pole-color', m.color);
+
+  let html = `
+    <div class="user-card" style="border-left-color:${m.color}">
+      <div class="av-bubble" style="border-color:${m.color}">${m.icon}</div>
+      <div class="user-info">
+        <div class="user-name">
+          ${user.avatar_name || 'Sin avatar'}
+          <span class="user-pole-badge" style="border-color:${m.color};color:${m.color}">${m.name}</span>
+        </div>
+        <div class="user-meta">${user.username} · ${m.label}</div>
+      </div>
+      <div class="xp-chip">XP: <strong>${user.xp || 0}</strong> · Nivel <strong>${level}</strong></div>
+    </div>
+  `;
+
+  if (!user.pole_id) {
+    html += `
+      <div class="no-pole-banner">
+        <p>Aún no has completado el cuestionario de polo.</p>
+        <a class="btn-setup" href="/syd/setup.html">Completar perfil →</a>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="section-header">
+        <div>
+          <div class="section-title">Contenido del Polo ${m.name}</div>
+          <div class="section-sub">${m.label} — Completa lecciones para ganar XP y BRT</div>
+        </div>
+      </div>
+      <div class="campaigns-list" id="campaigns-list">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    `;
+  }
+
+  document.getElementById('content').innerHTML = html;
+  if (user.pole_id) loadCampaigns(user.pole_id);
+}
+
+async function loadCampaigns(poleId) {
+  const list = document.getElementById('campaigns-list');
+  try {
+    const pole = await syd.pole(poleId);
+    const campaigns = pole.campaigns || [];
+    if (!campaigns.length) {
+      list.innerHTML = '<div class="empty">Próximamente más campañas en este polo.</div>';
+      return;
+    }
+    list.innerHTML = campaigns.map(c => `
+      <div class="camp-card" id="camp-${c.id}">
+        <div class="camp-header" onclick="toggleCampaign(${c.id})">
+          <div class="camp-icon">🗺️</div>
+          <div class="camp-info">
+            <div class="camp-name">${c.name}</div>
+            <div class="camp-desc">${c.description || ''}</div>
+          </div>
+          <div class="camp-progress-wrap" id="camp-prog-${c.id}">—</div>
+          <span class="camp-arrow">▶</span>
+        </div>
+        <div class="missions-body" id="missions-${c.id}">
+          <div style="color:var(--muted);font-size:.85rem;padding:8px 0">Cargando misiones...</div>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    list.innerHTML = '<div class="empty">Error cargando campañas.</div>';
+  }
+}
+
+async function toggleCampaign(id) {
+  const card = document.getElementById('camp-'+id);
+  if (!card.classList.contains('open')) {
+    card.classList.add('open');
+    await loadMissions(id);
+  } else {
+    card.classList.remove('open');
+  }
+}
+
+async function loadMissions(campId) {
+  const box = document.getElementById('missions-'+campId);
+  try {
+    const data = await syd.campaign(campId);
+    const missions = data.missions || [];
+    if (!missions.length) {
+      box.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:8px">Más contenido próximamente.</div>';
+      return;
+    }
+    box.innerHTML = missions.map(m => `
+      <div class="mission-item" id="miss-${m.id}">
+        <div class="mission-header" onclick="toggleMission(${m.id})">
+          <div class="mission-name">📌 ${m.name}</div>
+          <div class="mission-meta">${m.description || ''} · ${m.reward_xp} XP</div>
+        </div>
+        <div class="subs-box" id="subs-${m.id}" style="display:none"></div>
+      </div>
+    `).join('');
+  } catch {
+    box.innerHTML = '<div style="color:#ff6b6b;font-size:.85rem;padding:8px">Error cargando misiones.</div>';
+  }
+}
+
+async function toggleMission(missionId) {
+  const item = document.getElementById('miss-'+missionId);
+  const subsBox = document.getElementById('subs-'+missionId);
+  if (subsBox.style.display === 'none') {
+    item.classList.add('open');
+    subsBox.style.display = 'block';
+    subsBox.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Cargando...</div>';
+    await loadSubmissions(missionId);
+  } else {
+    item.classList.remove('open');
+    subsBox.style.display = 'none';
+  }
+}
+
+async function loadSubmissions(missionId) {
+  const box = document.getElementById('subs-'+missionId);
+  try {
+    const data = await syd.mission(missionId);
+    const subs = data.submissions || [];
+    if (!subs.length) {
+      box.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Sin contenido todavía.</div>';
+      return;
+    }
+    box.innerHTML = subs.map(s => {
+      const done = completedSubs.has(s.id);
+      return `
+        <div class="sub-item" id="sub-${s.id}">
+          <div class="sub-header" onclick="toggleSub(event,${s.id})">
+            <div class="sub-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+            <div class="sub-info">
+              <div class="sub-name">${s.name}</div>
+              <div class="sub-desc">${s.description || ''} · ${s.reward_xp} XP</div>
+            </div>
+            <span class="sub-arrow">▶</span>
+          </div>
+          <div class="sub-card">${renderSubCard(s, done, missionId)}</div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    box.innerHTML = '<div style="color:#ff6b6b;font-size:.82rem">Error cargando.</div>';
+  }
+}
+
+function renderSubCard(s, done, missionId) {
+  if (!s.content) {
+    return `<div style="color:var(--muted);font-size:.85rem;padding:4px 0">
+      📚 Contenido próximamente.
+      ${!done ? `<br><br><button class="btn-complete" style="display:inline-block" onclick="completeIt(event,${s.id},${missionId})">${s.reward_xp} XP — Marcar completado</button>` : '<span class="sub-done-badge" style="display:inline-block">✓ Completado</span>'}
+    </div>`;
+  }
+  const tips = Array.isArray(s.tips) ? s.tips : [];
+  const opts = Array.isArray(s.quiz_options) ? s.quiz_options : [];
+  return `
+    <div class="sub-section">
+      <div class="sub-section-label">Definición</div>
+      <div class="sub-content-text">${s.content}</div>
+    </div>
+    ${tips.length ? `<div class="sub-section"><div class="sub-section-label">3 claves</div><ul class="tips-list">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>` : ''}
+    ${s.quiz_question && opts.length ? `
+    <div class="sub-section">
+      <div class="sub-section-label">Test</div>
+      <div style="font-size:.88rem;font-weight:600;margin-bottom:10px;line-height:1.4">${s.quiz_question}</div>
+      <div class="quiz-opts" id="quiz-opts-${s.id}">
+        ${opts.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(event,${s.id},${missionId},${i},${o.correct})">${o.text}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="quiz-fb-${s.id}"></div>
+      ${!done ? `<button class="btn-complete" id="btn-complete-${s.id}" onclick="completeIt(event,${s.id},${missionId})">+${s.reward_xp} XP — ¡Completar!</button>` : ''}
+      <span class="sub-done-badge" id="done-badge-${s.id}" ${done?'style="display:inline-block"':''}>✓ Completado</span>
+    </div>` : ''}
+  `;
+}
+
+function toggleSub(e, subId) {
+  e.stopPropagation();
+  document.getElementById('sub-'+subId).classList.toggle('open');
+}
+
+function answerQuiz(e, subId, missionId, optIdx, isCorrect) {
+  e.stopPropagation();
+  const optsBox = document.getElementById('quiz-opts-'+subId);
+  if (!optsBox) return;
+  const btns = optsBox.querySelectorAll('.quiz-opt');
+  btns.forEach(b => b.disabled = true);
+  btns[optIdx].classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('quiz-fb-'+subId);
+  if (isCorrect) {
+    fb.textContent = '✓ ¡Correcto! Ya puedes reclamar tu XP.';
+    fb.className = 'quiz-feedback ok';
+    const btn = document.getElementById('btn-complete-'+subId);
+    if (btn) btn.style.display = 'inline-block';
+  } else {
+    btns.forEach(b => b.disabled = false);
+    btns[optIdx].disabled = true;
+    btns[optIdx].style.opacity = '0.5';
+    fb.textContent = '✗ Respuesta incorrecta. Inténtalo de nuevo.';
+    fb.className = 'quiz-feedback fail';
+  }
+}
+
+async function completeIt(e, subId, missionId) {
+  e.stopPropagation();
+  const btn = e.target;
+  btn.classList.add('loading');
+  btn.textContent = '...';
+  try {
+    const res = await syd.completeSubmission({ mission_id: missionId, submission_id: subId });
+    completedSubs.add(subId);
+    const item = document.getElementById('sub-'+subId);
+    item.querySelector('.sub-check').className = 'sub-check done';
+    item.querySelector('.sub-check').textContent = '✓';
+    btn.style.display = 'none';
+    const badge = document.getElementById('done-badge-'+subId);
+    if (badge) badge.style.display = 'inline-block';
+    if (res.xp_earned) {
+      user.xp = (user.xp || 0) + res.xp_earned;
+      showToast(`+${res.xp_earned} XP`);
+    }
+  } catch {
+    btn.classList.remove('loading');
+    btn.textContent = '¡Completar!';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('xp-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>

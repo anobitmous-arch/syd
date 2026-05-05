@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wish-Trade — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--red:#ff6b6b;--text:#e8f4f8;--muted:#7a9bb5;--pole-color:var(--orange)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+
+  nav{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:20px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.85rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+  .nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--pole-color)}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+  .btn-logout:hover{color:var(--text)}
+
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  .page{padding:28px 0 60px}
+
+  .wt-header{margin-bottom:20px}
+  .wt-title{font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:10px}
+  .wt-title .wt-badge{background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.3);color:var(--orange);font-size:.7rem;padding:3px 9px;border-radius:12px;font-weight:600;letter-spacing:.04em}
+  .wt-sub{color:var(--muted);font-size:.85rem;margin-top:5px}
+  .wt-sub strong{color:var(--text)}
+
+  /* COIN TABS */
+  .coin-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .coin-tab{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--muted);transition:all .18s;display:flex;align-items:center;gap:6px}
+  .coin-tab:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+  .coin-tab.active{color:#070d12;border-color:transparent}
+  .coin-sym{font-size:1rem;font-weight:900}
+
+  /* CHART CARD */
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px}
+  .price-header{padding:14px 18px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .price-symbol{font-size:.95rem;font-weight:700;color:var(--muted)}
+  .price-value{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .price-change{font-size:.85rem;font-weight:600;padding:3px 10px;border-radius:6px}
+  .price-change.up{background:rgba(46,229,157,.12);color:var(--green)}
+  .price-change.down{background:rgba(255,107,107,.12);color:var(--red)}
+  #chart{width:100%}
+
+  /* TRADE PANEL */
+  .trade-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px}
+  .trade-card-title{font-size:.95rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+
+  .settlement-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,159,67,.05);border:1px solid rgba(255,159,67,.15);border-radius:8px;padding:10px 14px;margin-bottom:18px}
+  .settle-label{font-size:.8rem;color:var(--muted)}
+  .settle-timer{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--orange)}
+
+  .bet-section-label{font-size:.78rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+  .bet-presets{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .bet-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 14px;font-size:.82rem;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s}
+  .bet-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3)}
+  .bet-btn.active{background:rgba(255,159,67,.18);border-color:var(--orange);color:var(--orange)}
+
+  .balance-info{font-size:.82rem;color:var(--muted);margin-bottom:18px}
+  .balance-info strong{color:#ffd700}
+
+  .direction-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-long{background:rgba(46,229,157,.12);border:2px solid var(--green);color:var(--green);border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:all .15s}
+  .btn-long:hover{background:rgba(46,229,157,.2)}
+  .btn-long:active{transform:scale(.98)}
+  .btn-short{background:rgba(255,107,107,.12);border:2px solid var(--red);color:var(--red);border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;transition:all .15s}
+  .btn-short:hover{background:rgba(255,107,107,.2)}
+  .btn-short:active{transform:scale(.98)}
+  .btn-long:disabled,.btn-short:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  /* TRADE STATUS */
+  .trade-status-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .badge{display:inline-block;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:12px}
+  .badge-open{background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.3);color:var(--orange)}
+  .badge-won{background:rgba(46,229,157,.12);border:1px solid rgba(46,229,157,.3);color:var(--green)}
+  .badge-lost{background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.3);color:var(--red)}
+
+  .trade-status-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+  .trade-status-row:last-of-type{border-bottom:none}
+  .trade-status-row span:first-child{color:var(--muted)}
+
+  .result-box{margin-top:16px;border-radius:10px;padding:14px 18px;font-size:.9rem;font-weight:600;text-align:center}
+  .result-won{background:rgba(46,229,157,.1);border:1px solid rgba(46,229,157,.3);color:var(--green)}
+  .result-lost{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);color:var(--red)}
+
+  .wt-closed{text-align:center;padding:28px 20px;color:var(--muted)}
+  .wt-closed-icon{font-size:2.5rem;margin-bottom:10px}
+  .wt-closed-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px}
+  .wt-closed-sub{font-size:.82rem;margin-bottom:20px}
+  .wt-next-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .wt-next-timer{font-size:2rem;font-weight:900;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:.04em}
+
+  /* HISTORY */
+  .history-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+  .history-title{font-size:.95rem;font-weight:700;margin-bottom:14px}
+  .history-row{display:grid;grid-template-columns:28px 52px 28px 70px 80px 1fr;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem}
+  .history-row:last-child{border-bottom:none}
+  .history-row .h-sym{font-weight:900;font-size:.95rem}
+  .history-row .h-dir{font-weight:600}
+  .history-row .h-bet{color:var(--muted)}
+  .history-row .h-result{font-weight:700;text-align:right}
+  .history-row .h-date{color:var(--muted);font-size:.75rem;text-align:right}
+  .history-empty{color:var(--muted);font-size:.85rem;padding:8px 0}
+
+  /* SHARE CARD OVERLAY */
+  .share-overlay{position:fixed;inset:0;background:rgba(7,13,18,.85);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+  .share-overlay.show{opacity:1;pointer-events:all}
+  .share-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px 24px;width:100%;max-width:340px;text-align:center;position:relative}
+  .share-card-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1}
+  .share-card-close:hover{color:var(--text)}
+  .share-card-badge{display:inline-block;font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:12px;margin-bottom:14px;letter-spacing:.04em}
+  .share-card-asset{font-size:2rem;font-weight:900;margin-bottom:2px}
+  .share-card-dir{font-size:1.1rem;font-weight:700;margin-bottom:14px}
+  .share-card-divider{height:1px;background:var(--border);margin:14px 0}
+  .share-card-user{font-size:.82rem;color:var(--muted);margin-bottom:16px}
+  .share-card-user strong{color:var(--text)}
+  .btn-copy-share{width:100%;padding:12px;border-radius:10px;background:var(--orange);color:#070d12;font-weight:800;font-size:.95rem;border:none;cursor:pointer;transition:opacity .15s;margin-bottom:8px}
+  .btn-copy-share:hover{opacity:.85}
+  .btn-dismiss-share{width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.88rem;cursor:pointer;transition:all .15s}
+  .btn-dismiss-share:hover{color:var(--text)}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:40px;color:var(--muted)}
+  .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);color:var(--text);font-weight:600;padding:10px 18px;border-radius:8px;font-size:.88rem;transform:translateY(80px);opacity:0;transition:all .3s;z-index:100;max-width:300px}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{border-color:rgba(46,229,157,.4);color:var(--green)}
+  .toast.err{border-color:rgba(255,107,107,.4);color:var(--red)}
+
+  @media(max-width:600px){
+    .coin-tabs{gap:6px}
+    .coin-tab{padding:7px 10px;font-size:.78rem}
+    .direction-btns{grid-template-columns:1fr 1fr}
+    .history-row{grid-template-columns:24px 46px 24px 60px 70px 1fr;gap:5px;font-size:.78rem}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <div class="nav-links">
+    <a class="nav-link" href="/syd/home.html">Home</a>
+    <a class="nav-link" href="/syd/missions.html">Aprende</a>
+    <a class="nav-link" href="/syd/community.html">Comunidad</a>
+    <a class="nav-link" href="/syd/profile.html">Perfil</a>
+    <a class="nav-link active" href="/syd/wish-trade.html">Wish-Trade</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</nav>
+
+<div class="wrap page">
+  <div id="loading" class="loading-wrap">
+    <div class="spinner"></div>
+    <div>Cargando...</div>
+  </div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<div class="share-overlay" id="share-overlay">
+  <div class="share-card" id="share-card">
+    <button class="share-card-close" onclick="closeShareCard()">✕</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="/syd/syd.js"></script>
+<script>
+'use strict';
+
+const COIN_META = {
+  BTC:  { label: 'Bitcoin',  color: '#f7931a', sym: '₿' },
+  ETH:  { label: 'Ethereum', color: '#627eea', sym: 'Ξ' },
+  XRP:  { label: 'XRP',      color: '#00aae4', sym: '◈' },
+  DOGE: { label: 'Dogecoin', color: '#c2a633', sym: 'Ð' },
+  BNB:  { label: 'BNB',      color: '#f3ba2f', sym: '◆' },
+  SOL:  { label: 'Solana',   color: '#9945ff', sym: '◎' },
+};
+
+let user = null;
+let currentSymbol = 'BTC';
+let selectedBet = 1;
+let todayTrades = {};   // { BTC: trade, ETH: trade, ... }
+let pendingTrades = []; // trades de ayer pendientes
+let userBertcoins = 0;
+let chart = null;
+let candleSeries = null;
+let livews = null;
+let countdownInterval = null;
+let currentShareText = '';
+
+async function doLogout() {
+  await syd.logout().catch(() => {});
+  location.href = '/syd/';
+}
+
+function toggleHistory() {
+  const card = document.getElementById('history-card');
+  const btn = document.getElementById('syd-history-toggle');
+  if (!card) return;
+  const open = card.classList.toggle('syd-m-open');
+  if (btn) btn.textContent = open ? '📋 Ocultar historial' : '📋 Ver historial de trades';
+}
+
+async function init() {
+  user = await requireAuth('/syd/login.html');
+  if (!user) return;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  document.getElementById('content').innerHTML = buildShell();
+
+  initChart();
+  await Promise.all([loadTodayTrade(), loadHistory()]);
+  selectCoin('BTC');
+}
+
+function buildShell() {
+  return `
+    <div class="wt-header">
+      <div class="wt-title">⚡ Wish-Trade <span class="wt-badge">BETA</span></div>
+      <div class="wt-sub">Predice el movimiento. Settlement exacto a las <strong>12:34:56 UTC</strong>. Acierta y dobla tus BRT.</div>
+    </div>
+
+    <div class="coin-tabs" id="coin-tabs">
+      ${Object.entries(COIN_META).map(([sym, m]) => `
+        <button class="coin-tab" data-symbol="${sym}" onclick="selectCoin('${sym}')"
+          style="--tab-color:${m.color}" id="tab-${sym}">
+          <span class="coin-sym" style="color:${m.color}">${m.sym}</span>
+          ${sym}
+          <span class="tab-check" id="tabcheck-${sym}" style="display:none;font-size:.7rem;margin-left:2px">✓</span>
+        </button>
+      `).join('')}
+    </div>
+
+    <div class="chart-card">
+      <div class="price-header">
+        <span class="price-symbol" id="price-symbol">—</span>
+        <span class="price-value" id="price-value">—</span>
+        <span class="price-change" id="price-change"></span>
+      </div>
+      <div id="chart"></div>
+    </div>
+
+    <div class="trade-card" id="trade-panel">
+      <div class="loading-wrap" style="padding:24px">
+        <div class="spinner" style="width:18px;height:18px;border-width:2px;margin:0 auto"></div>
+      </div>
+    </div>
+
+    <button class="syd-m-history-btn" id="syd-history-toggle" onclick="toggleHistory()">
+      📋 Ver historial de trades
+    </button>
+
+    <div class="history-card" id="history-card">
+      <div class="history-title">📋 Historial de trades</div>
+      <div id="history-list"><div class="history-empty">Cargando...</div></div>
+    </div>
+  `;
+}
+
+// ── CHART ────────────────────────────────────────────────
+
+function initChart() {
+  const el = document.getElementById('chart');
+  const isMobile = window.innerWidth <= 600;
+  chart = LightweightCharts.createChart(el, {
+    width: el.clientWidth,
+    height: isMobile ? 180 : 300,
+    layout: { background: { color: '#0d1821' }, textColor: '#7a9bb5' },
+    grid: { vertLines: { color: '#1a2940' }, horzLines: { color: '#1a2940' } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: '#1a2940' },
+    timeScale: { borderColor: '#1a2940', timeVisible: true, secondsVisible: false },
+    // En móvil: no capturar el scroll vertical táctil para permitir scroll de página
+    handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: !isMobile },
+    handleScale: { mouseWheel: !isMobile, pinch: !isMobile, axisPressedMouseMove: !isMobile },
+  });
+  candleSeries = chart.addCandlestickSeries({
+    upColor: '#2ee59d', downColor: '#ff6b6b',
+    borderUpColor: '#2ee59d', borderDownColor: '#ff6b6b',
+    wickUpColor: '#2ee59d', wickDownColor: '#ff6b6b',
+  });
+  window.addEventListener('resize', () => {
+    const mobile = window.innerWidth <= 600;
+    chart.applyOptions({
+      width: document.getElementById('chart').clientWidth,
+      height: mobile ? 180 : 300,
+    });
+  });
+}
+
+async function loadChartData(symbol) {
+  try {
+    const r = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=1h&limit=72`
+    );
+    const klines = await r.json();
+    const data = klines.map(k => ({
+      time: Math.floor(k[0] / 1000),
+      open:  parseFloat(k[1]),
+      high:  parseFloat(k[2]),
+      low:   parseFloat(k[3]),
+      close: parseFloat(k[4]),
+    }));
+    candleSeries.setData(data);
+    chart.timeScale().fitContent();
+  } catch (e) {
+    console.error('[wish-trade] chart error:', e);
+  }
+}
+
+// ── LIVE PRICE ───────────────────────────────────────────
+
+function connectWS(symbol) {
+  if (livews) { try { livews.close(); } catch(_) {} livews = null; }
+  livews = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}usdt@miniTicker`);
+  livews.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    if (d.s !== symbol + 'USDT') return;
+    renderPrice(symbol, parseFloat(d.c), parseFloat(d.P));
+  };
+  livews.onerror = () => { livews = null; };
+}
+
+function renderPrice(symbol, price, changePct) {
+  if (symbol !== currentSymbol) return;
+  const valEl = document.getElementById('price-value');
+  const chgEl = document.getElementById('price-change');
+  if (!valEl) return;
+
+  const fmt = price >= 10000 ? price.toFixed(2)
+            : price >= 1     ? price.toFixed(4)
+            : price.toFixed(6);
+  valEl.textContent = '$' + parseFloat(fmt).toLocaleString('en-US', { maximumFractionDigits: 6 });
+
+  const up = changePct >= 0;
+  chgEl.textContent = (up ? '+' : '') + changePct.toFixed(2) + '%';
+  chgEl.className = 'price-change ' + (up ? 'up' : 'down');
+}
+
+// ── COIN SELECTION ───────────────────────────────────────
+
+async function selectCoin(symbol) {
+  currentSymbol = symbol;
+  const meta = COIN_META[symbol];
+
+  document.querySelectorAll('.coin-tab').forEach(t => {
+    const active = t.dataset.symbol === symbol;
+    t.classList.toggle('active', active);
+    if (active) t.style.background = meta.color;
+    else        t.style.background = '';
+  });
+
+  document.getElementById('price-symbol').textContent = symbol + '/USDT';
+  document.getElementById('price-value').textContent = '—';
+  document.getElementById('price-change').textContent = '';
+  document.getElementById('price-change').className = 'price-change';
+
+  candleSeries.applyOptions({
+    upColor: meta.color, borderUpColor: meta.color, wickUpColor: meta.color,
+  });
+
+  await loadChartData(symbol);
+  connectWS(symbol);
+  renderTradePanel(); // refrescar panel al cambiar de moneda
+}
+
+// ── TRADE STATUS ─────────────────────────────────────────
+
+async function loadTodayTrade() {
+  try {
+    const res = await syd.wishTradeToday();
+    todayTrades   = res.trades   || {};
+    pendingTrades = res.pending  || [];
+    userBertcoins = res.bertcoins || 0;
+  } catch {
+    todayTrades = {}; pendingTrades = [];
+  }
+  updateTabChecks();
+  renderTradePanel();
+}
+
+function updateTabChecks() {
+  for (const sym of Object.keys(COIN_META)) {
+    const el = document.getElementById('tabcheck-' + sym);
+    if (el) el.style.display = todayTrades[sym] ? 'inline' : 'none';
+  }
+}
+
+function isTradeWindowOpen() {
+  // Ventana cerrada solo durante el settlement: 12:30:00 – 12:34:56 UTC
+  const now = new Date();
+  const s = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+  const SETTLE_START = 12 * 3600 + 30 * 60;      // 12:30:00
+  const SETTLE_END   = 12 * 3600 + 34 * 60 + 56; // 12:34:56
+  return !(s >= SETTLE_START && s <= SETTLE_END);
+}
+
+function getNextSnapshotTarget() {
+  const now = new Date();
+  const todaySnap = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 34, 56
+  ));
+  // Si la snapshot de hoy aún no ha ocurrido → es hoy
+  if (now <= todaySnap) return todaySnap;
+  // Ya pasó (ventana abierta) → el siguiente es mañana
+  const tomorrowSnap = new Date(todaySnap);
+  tomorrowSnap.setUTCDate(tomorrowSnap.getUTCDate() + 1);
+  return tomorrowSnap;
+}
+
+function renderTradePanel() {
+  const panel = document.getElementById('trade-panel');
+  if (!panel) return;
+
+  const tradeForSymbol = todayTrades[currentSymbol] || null;
+  const pendingForSymbol = pendingTrades.find(t => t.symbol === currentSymbol) || null;
+
+  if (!isTradeWindowOpen()) {
+    // Bloque de settlement (12:30 – 12:34:56)
+    if (pendingForSymbol) {
+      renderTradeStatus(panel, pendingForSymbol, true);
+    } else {
+      renderClosedPanel(panel);
+    }
+    return;
+  }
+
+  // Ventana abierta
+  if (tradeForSymbol) {
+    renderTradeStatus(panel, tradeForSymbol);
+  } else if (pendingForSymbol) {
+    renderTradeStatus(panel, pendingForSymbol, true);
+  } else {
+    renderTradeForm(panel);
+  }
+}
+
+function renderClosedPanel(panel) {
+  panel.innerHTML = `
+    <div class="wt-closed">
+      <div class="wt-closed-icon">⏳</div>
+      <div class="wt-closed-title">Settlement en curso</div>
+      <div class="wt-closed-sub">Reabre a las <strong>12:34:57 UTC</strong></div>
+      <div class="wt-next-label">Próximo snapshot en</div>
+      <div class="wt-next-timer" id="snapshot-timer">--:--:--</div>
+    </div>
+  `;
+  startSnapshotCountdown();
+}
+
+function renderTradeForm(panel) {
+  panel.innerHTML = `
+    <div class="trade-card-title">
+      <span>🎯 Tu predicción de hoy</span>
+    </div>
+    <div class="settlement-row">
+      <span class="settle-label">📸 Snapshot (liquidación) en</span>
+      <span class="settle-timer" id="settle-timer">--:--:--</span>
+    </div>
+    <div class="bet-section-label">Cantidad a apostar</div>
+    <div class="bet-presets" id="bet-presets">
+      ${[1, 10, 100].map(a => `
+        <button class="bet-btn ${a === selectedBet ? 'active' : ''}" onclick="selectBet(${a})">${a} BRT</button>
+      `).join('')}
+    </div>
+    <div class="balance-info">🪙 Saldo disponible: <strong>${userBertcoins}</strong> BRT</div>
+    <div class="direction-btns">
+      <button class="btn-long" id="btn-long" onclick="placeTrade('LONG')">📈 LONG</button>
+      <button class="btn-short" id="btn-short" onclick="placeTrade('SHORT')">📉 SHORT</button>
+    </div>
+  `;
+  startSettlementCountdown();
+}
+
+function renderTradeStatus(panel, t, isPendingYesterday = false) {
+  const meta = COIN_META[t.symbol] || { color: '#fff', sym: t.symbol };
+  const isOpen = t.status === 'open';
+  const isWon  = t.status === 'won';
+
+  const dirIcon = t.direction === 'LONG' ? '📈' : '📉';
+  const badgeHtml = isOpen
+    ? '<span class="badge badge-open">⏳ Pendiente</span>'
+    : isWon
+      ? '<span class="badge badge-won">✅ Ganado</span>'
+      : '<span class="badge badge-lost">❌ Perdido</span>';
+
+  const fmtPrice = p => p ? parseFloat(p).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '—';
+  const title = isPendingYesterday ? '⏳ Trade pendiente de liquidar' : '🎯 Trade de hoy';
+
+  panel.innerHTML = `
+    <div class="trade-card-title">
+      <span>${title}</span>
+    </div>
+    ${isPendingYesterday && isOpen ? `
+    <div class="settlement-row">
+      <span class="settle-label">📸 Snapshot en</span>
+      <span class="settle-timer" id="settle-timer">--:--:--</span>
+    </div>` : ''}
+    <div class="trade-status-header">
+      <span style="color:${meta.color};font-size:1rem;font-weight:800">${meta.sym} ${t.symbol}/USDT</span>
+      ${badgeHtml}
+    </div>
+    <div class="trade-status-row">
+      <span>Dirección</span>
+      <strong>${dirIcon} ${t.direction}</strong>
+    </div>
+    <div class="trade-status-row">
+      <span>Apuesta</span>
+      <strong>🪙 ${t.bet_amount} BRT</strong>
+    </div>
+    <div class="trade-status-row">
+      <span>Precio entrada</span>
+      <strong>$${fmtPrice(t.entry_price)}</strong>
+    </div>
+    ${t.exit_price ? `
+    <div class="trade-status-row">
+      <span>Precio cierre</span>
+      <strong>$${fmtPrice(t.exit_price)}</strong>
+    </div>` : ''}
+    ${!isPendingYesterday && isOpen ? `
+    <div class="settlement-row" style="margin-top:18px">
+      <span class="settle-label">📸 Snapshot en</span>
+      <span class="settle-timer" id="settle-timer">--:--:--</span>
+    </div>` : ''}
+    ${isWon ? `
+    <div class="result-box result-won">
+      🎉 ¡Predicción correcta! Cobras <strong>+${t.payout} BRT</strong> (apuesta × 2)
+    </div>` : ''}
+    ${!isOpen && !isWon ? `
+    <div class="result-box result-lost">
+      📉 El mercado fue en tu contra. Mañana lo recuperas.
+    </div>` : ''}
+  `;
+
+  if (isOpen) startSettlementCountdown();
+}
+
+// Countdown en el formulario de trade (muestra cuánto falta para el snapshot de mañana)
+function startSettlementCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  const doTick = () => {
+    const el = document.getElementById('settle-timer');
+    if (!el) { clearInterval(countdownInterval); return; }
+    const target = getNextSnapshotTarget();
+    const diff = Math.max(0, target.getTime() - Date.now());
+    if (diff === 0) {
+      el.textContent = '⚡ LIVE';
+      clearInterval(countdownInterval);
+      setTimeout(() => loadTodayTrade(), 8000);
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+  doTick();
+  countdownInterval = setInterval(doTick, 1000);
+}
+
+// Countdown en el panel cerrado (ventana 00:00:00 – 12:34:56)
+function startSnapshotCountdown() {
+  const tick = () => {
+    const el = document.getElementById('snapshot-timer');
+    if (!el) return;
+    const target = getNextSnapshotTarget();
+    const diff = Math.max(0, target.getTime() - Date.now());
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (diff === 0) { loadTodayTrade(); return; }
+    setTimeout(tick, 1000);
+  };
+  tick();
+}
+
+// ── BET & TRADE ACTIONS ──────────────────────────────────
+
+function selectBet(amount) {
+  selectedBet = amount;
+  document.querySelectorAll('.bet-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent) === amount);
+  });
+}
+
+async function placeTrade(direction) {
+  if (userBertcoins < selectedBet) {
+    showToast('Saldo BRT insuficiente', 'err');
+    return;
+  }
+  const btnL = document.getElementById('btn-long');
+  const btnS = document.getElementById('btn-short');
+  if (btnL) btnL.disabled = true;
+  if (btnS) btnS.disabled = true;
+
+  try {
+    const res = await syd.wishTradeTrade({
+      symbol: currentSymbol,
+      direction,
+      bet_amount: selectedBet,
+    });
+    todayTrades[currentSymbol] = res.trade;
+    userBertcoins -= selectedBet;
+    updateTabChecks();
+    renderTradePanel();
+    showToast(`${direction} en ${currentSymbol} — 🪙 ${selectedBet} BRT apostados`, 'ok');
+    setTimeout(() => showShareCard(currentSymbol, direction, selectedBet), 800);
+  } catch (err) {
+    const msg = err?.data?.error || 'Error al colocar el trade';
+    showToast(msg, 'err');
+    if (btnL) btnL.disabled = false;
+    if (btnS) btnS.disabled = false;
+  }
+}
+
+// ── HISTORY ──────────────────────────────────────────────
+
+async function loadHistory() {
+  try {
+    const { trades } = await syd.wishTradeHistory();
+    renderHistory(trades);
+  } catch {
+    document.getElementById('history-list').innerHTML =
+      '<div class="history-empty">Sin historial disponible.</div>';
+  }
+}
+
+function renderHistory(trades) {
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  if (!trades?.length) {
+    el.innerHTML = '<div class="history-empty">Aún no has hecho ningún trade. ¡Atrévete!</div>';
+    return;
+  }
+  el.innerHTML = trades.map(t => {
+    const m = COIN_META[t.symbol] || { color: '#fff', sym: t.symbol };
+    const dirIcon = t.direction === 'LONG' ? '📈' : '📉';
+    const statusIcon = t.status === 'won' ? '✅' : t.status === 'lost' ? '❌' : '⏳';
+    const resultColor = t.status === 'won' ? 'var(--green)' : t.status === 'lost' ? 'var(--red)' : 'var(--muted)';
+    const resultText = t.status === 'won'
+      ? `+${t.payout} BRT`
+      : t.status === 'lost'
+        ? `-${t.bet_amount} BRT`
+        : '—';
+    const dateStr = new Date(t.trade_date).toLocaleDateString('es-ES', { day:'2-digit', month:'short' });
+    return `
+      <div class="history-row">
+        <span class="h-sym" style="color:${m.color}">${m.sym}</span>
+        <span>${t.symbol}</span>
+        <span class="h-dir">${dirIcon}</span>
+        <span class="h-bet">🪙 ${t.bet_amount}</span>
+        <span class="h-result" style="color:${resultColor}">${statusIcon} ${resultText}</span>
+        <span class="h-date">${dateStr}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── SHARE CARD ───────────────────────────────────────────
+
+const POLE_COLORS = { 1:'#2ee59d', 2:'#5baeff', 3:'#ff9f43', 4:'#c77aff' };
+const POLE_NAMES  = { 1:'Norte', 2:'Sur', 3:'Este', 4:'Oeste' };
+
+function showShareCard(symbol, direction, betAmount) {
+  const meta = COIN_META[symbol] || { color:'#fff', sym: symbol };
+  const refCode = user?.ref_code || '';
+  const poleId = user?.pole_id || 3;
+  const poleColor = POLE_COLORS[poleId] || 'var(--orange)';
+  const poleName = POLE_NAMES[poleId] || '';
+  const dirIcon = direction === 'LONG' ? '📈' : '📉';
+  const dirLabel = direction === 'LONG' ? 'SUBE' : 'BAJA';
+  const shareUrl = refCode
+    ? `https://bertcrypto.com/syd/register.html?ref=${refCode}`
+    : 'https://bertcrypto.com/syd';
+  currentShareText = `Predigo que ${symbol} ${dirLabel} hoy en Wish-Trade ⚡\n¿Y tú?\n→ ${shareUrl}`;
+
+  const card = document.getElementById('share-card');
+  card.innerHTML = `
+    <button class="share-card-close" onclick="closeShareCard()">✕</button>
+    <div class="share-card-badge" style="background:${poleColor}22;border:1px solid ${poleColor}55;color:${poleColor}">
+      Polo ${poleName}
+    </div>
+    <div class="share-card-asset" style="color:${meta.color}">${meta.sym} ${symbol}</div>
+    <div class="share-card-dir">${dirIcon} Predigo que <strong>${dirLabel}</strong></div>
+    <div class="share-card-divider"></div>
+    <div class="share-card-user">
+      <strong>${user?.username || ''}</strong> · SeedYourDreams
+    </div>
+    <button class="btn-copy-share" onclick="copyShareText(this)">
+      📋 Copiar y compartir
+    </button>
+    <button class="btn-dismiss-share" onclick="closeShareCard()">Ahora no</button>
+  `;
+  document.getElementById('share-overlay').classList.add('show');
+}
+
+function closeShareCard() {
+  document.getElementById('share-overlay').classList.remove('show');
+}
+
+async function copyShareText(btn) {
+  try {
+    await navigator.clipboard.writeText(currentShareText);
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => closeShareCard(), 1400);
+  } catch {
+    // Fallback para navegadores sin clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = currentShareText;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => closeShareCard(), 1400);
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+init();
+</script>
+</body>
+</html>

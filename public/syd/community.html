@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Comunidad — SeedYourDreams</title>
+<style>
+  :root{--bg:#070d12;--card:#0d1821;--border:#1a2940;--green:#2ee59d;--blue:#5baeff;--orange:#ff9f43;--purple:#c77aff;--text:#e8f4f8;--muted:#7a9bb5;--pole-color:var(--orange)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+
+  nav{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}
+  .logo{font-size:1rem;font-weight:700}.logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:20px;align-items:center}
+  .nav-link{color:var(--muted);font-size:.85rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+  .nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--pole-color)}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+  .btn-logout:hover{color:var(--text)}
+
+  .page{padding:32px 0 60px}
+  .page-header{margin-bottom:24px}
+  .page-title{font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:10px}
+  .page-sub{color:var(--muted);font-size:.9rem;margin-top:4px}
+  .pole-pill{display:inline-block;border:1px solid;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600}
+
+  /* COMPOSE */
+  .compose{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px}
+  textarea{width:100%;background:#0a1520;border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:.9rem;resize:vertical;min-height:80px;font-family:inherit;outline:none;transition:border-color .2s}
+  textarea:focus{border-color:var(--orange)}
+  .compose-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .char-count{color:var(--muted);font-size:.8rem}
+  .btn{display:inline-block;padding:8px 20px;border-radius:7px;font-weight:600;font-size:.9rem;cursor:pointer;border:none;transition:opacity .2s}
+  .btn:hover:not(:disabled){opacity:.85}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--orange);color:#070d12}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;font-size:.82rem}
+
+  /* POSTS */
+  .posts-list{display:flex;flex-direction:column;gap:12px}
+  .post-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s}
+  .post-card:hover{border-color:rgba(255,255,255,.08)}
+  .post-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .av-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;border:2px solid;flex-shrink:0}
+  .post-meta{flex:1}
+  .post-author{font-weight:600;font-size:.9rem}
+  .post-time{color:var(--muted);font-size:.78rem;margin-top:1px}
+  .post-body{font-size:.93rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:12px;color:var(--text)}
+  .post-footer{display:flex;align-items:center;gap:12px}
+  .post-action{background:none;border:none;color:var(--muted);font-size:.82rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .2s,color .2s;display:flex;align-items:center;gap:4px}
+  .post-action:hover{background:rgba(255,255,255,.04);color:var(--text)}
+
+  /* COMMENTS */
+  .comments-box{margin-top:12px;border-top:1px solid var(--border);padding-top:12px;display:none}
+  .comments-box.open{display:block}
+  .comment-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .comment-item:last-child{border-bottom:none}
+  .comment-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;border:1px solid;flex-shrink:0;margin-top:2px}
+  .comment-content{flex:1}
+  .comment-author{font-size:.8rem;font-weight:600;margin-bottom:2px}
+  .comment-text{font-size:.85rem;color:var(--text);line-height:1.5;white-space:pre-wrap}
+  .comment-time{color:var(--muted);font-size:.72rem;margin-top:2px}
+  .comment-compose{display:flex;gap:8px;margin-top:10px}
+  .comment-compose input{flex:1;background:#0a1520;border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none}
+  .comment-compose input:focus{border-color:var(--orange)}
+  .btn-send{background:var(--orange);color:#070d12;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.82rem;font-weight:600}
+
+  /* LOADING */
+  .loading-wrap{text-align:center;padding:40px;color:var(--muted)}
+  .spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{text-align:center;padding:40px;color:var(--muted)}
+
+  .error-msg{color:#ff6b6b;font-size:.85rem;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><a href="/syd/"><span>Seed</span>YourDreams</a></div>
+  <div class="nav-links">
+    <a class="nav-link" href="/syd/home.html">Home</a>
+    <a class="nav-link" href="/syd/missions.html">Aprende</a>
+    <a class="nav-link active" href="/syd/community.html">Comunidad</a>
+    <a class="nav-link" href="/syd/profile.html">Perfil</a>
+    <a class="nav-link" href="/syd/wish-trade.html">Wish-Trade</a>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+</nav>
+
+<div class="wrap page">
+  <div id="loading" class="loading-wrap"><div class="spinner"></div><div>Cargando comunidad...</div></div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script src="/syd/syd.js"></script>
+<script>
+const POLE_ICONS = {1:'🦙',2:'🦅',3:'🐯',4:'🦉'};
+let currentUser = null;
+
+async function doLogout() {
+  await syd.logout().catch(()=>{});
+  location.href = '/syd/';
+}
+
+function timeAgo(ts) {
+  const diff = (Date.now() - new Date(ts)) / 1000;
+  if (diff < 60) return 'ahora';
+  if (diff < 3600) return Math.floor(diff/60) + ' min';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h';
+  return Math.floor(diff/86400) + 'd';
+}
+
+function authorDot(pole_id, avatarName, size=34) {
+  const m = poleById(pole_id || 1);
+  const initials = (avatarName || '?').substring(0,2).toUpperCase();
+  return `<div class="av-dot" style="width:${size}px;height:${size}px;border-color:${m.color};color:${m.color};background:${m.color}18">${initials}</div>`;
+}
+
+async function init() {
+  currentUser = await requireAuth('/syd/login.html');
+  if (!currentUser) return;
+
+  const m = poleById(currentUser.pole_id);
+  document.documentElement.style.setProperty('--pole-color', m.color);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  renderPage();
+  loadPosts();
+}
+
+function renderPage() {
+  const m = poleById(currentUser.pole_id);
+  document.getElementById('content').innerHTML = `
+    <div class="page-header">
+      <div class="page-title">
+        Comunidad ${POLE_ICONS[currentUser.pole_id] || '🌍'}
+        <span class="pole-pill" style="border-color:${m.color};color:${m.color}">${m.name}</span>
+      </div>
+      <div class="page-sub">Comparte, pregunta y aprende con tu polo. Solo ven los miembros del Polo ${m.name}.</div>
+    </div>
+
+    <div class="compose">
+      <textarea id="post-text" placeholder="¿Qué tienes en mente? Comparte un aprendizaje, una duda o una reflexión..." oninput="updateCount()"></textarea>
+      <div class="compose-footer">
+        <span class="char-count" id="char-count">0 / 1000</span>
+        <button class="btn btn-primary" id="btn-post" onclick="submitPost()">Publicar</button>
+      </div>
+      <div class="error-msg" id="post-error"></div>
+    </div>
+
+    <div id="posts-list" class="posts-list">
+      <div class="loading-wrap"><div class="spinner"></div></div>
+    </div>
+  `;
+}
+
+function updateCount() {
+  const v = document.getElementById('post-text').value.length;
+  document.getElementById('char-count').textContent = `${v} / 1000`;
+}
+
+async function loadPosts() {
+  const list = document.getElementById('posts-list');
+  try {
+    const posts = await syd.req ? undefined : null; // use direct fetch
+    const res = await fetch(`/api/syd/community/${currentUser.pole_id}`, { credentials: 'include' });
+    const posts2 = await res.json();
+    renderPosts(posts2, list);
+  } catch {
+    list.innerHTML = '<div class="empty">Error cargando posts.</div>';
+  }
+}
+
+function renderPosts(posts, container) {
+  if (!posts.length) {
+    container.innerHTML = '<div class="empty">Sé el primero en publicar en este polo.</div>';
+    return;
+  }
+  container.innerHTML = posts.map(p => `
+    <div class="post-card" id="post-${p.id}">
+      <div class="post-header">
+        ${authorDot(p.author_pole_id, p.avatar_name)}
+        <div class="post-meta">
+          <div class="post-author">${p.username} <span style="color:var(--muted);font-weight:400">· ${p.avatar_name || 'Sin avatar'}</span></div>
+          <div class="post-time">${timeAgo(p.created_at)}</div>
+        </div>
+      </div>
+      <div class="post-body">${escHtml(p.content)}</div>
+      <div class="post-footer">
+        <button class="post-action" onclick="toggleComments(${p.id})">
+          💬 ${p.comment_count} comentario${p.comment_count !== 1 ? 's' : ''}
+        </button>
+      </div>
+      <div class="comments-box" id="comments-${p.id}"></div>
+    </div>
+  `).join('');
+}
+
+async function toggleComments(postId) {
+  const box = document.getElementById('comments-'+postId);
+  if (box.classList.contains('open')) {
+    box.classList.remove('open');
+    return;
+  }
+  box.classList.add('open');
+  box.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Cargando...</div>';
+  try {
+    const res = await fetch(`/api/syd/community/post/${postId}`, { credentials: 'include' });
+    const { comments } = await res.json();
+    renderComments(postId, comments, box);
+  } catch {
+    box.innerHTML = '<div style="color:#ff6b6b;font-size:.82rem">Error cargando comentarios.</div>';
+  }
+}
+
+function renderComments(postId, comments, box) {
+  const list = comments.map(c => `
+    <div class="comment-item">
+      ${authorDot(c.author_pole_id, c.avatar_name, 26)}
+      <div class="comment-content">
+        <div class="comment-author">${c.username}</div>
+        <div class="comment-text">${escHtml(c.content)}</div>
+        <div class="comment-time">${timeAgo(c.created_at)}</div>
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Sin comentarios todavía.</div>';
+
+  box.innerHTML = `
+    ${list}
+    <div class="comment-compose">
+      <input id="comment-input-${postId}" type="text" placeholder="Añade un comentario..." maxlength="500">
+      <button class="btn-send" onclick="sendComment(${postId})">→</button>
+    </div>
+  `;
+
+  const input = document.getElementById(`comment-input-${postId}`);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(postId); });
+}
+
+async function sendComment(postId) {
+  const input = document.getElementById(`comment-input-${postId}`);
+  const content = input.value.trim();
+  if (!content) return;
+  input.disabled = true;
+  try {
+    const res = await fetch(`/api/syd/community/post/${postId}/comment`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    const { comment } = await res.json();
+    input.value = '';
+    // Re-fetch and re-render comments
+    const fullRes = await fetch(`/api/syd/community/post/${postId}`, { credentials: 'include' });
+    const { comments } = await fullRes.json();
+    const box = document.getElementById('comments-'+postId);
+    renderComments(postId, comments, box);
+
+    // Update counter
+    const btn = document.querySelector(`#post-${postId} .post-action`);
+    if (btn) {
+      const n = comments.length;
+      btn.innerHTML = `💬 ${n} comentario${n !== 1 ? 's' : ''}`;
+    }
+  } catch {
+    input.disabled = false;
+  }
+}
+
+async function submitPost() {
+  const text = document.getElementById('post-text').value.trim();
+  const err = document.getElementById('post-error');
+  const btn = document.getElementById('btn-post');
+  if (!text) { err.textContent = 'Escribe algo antes de publicar.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch('/api/syd/community', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    document.getElementById('post-text').value = '';
+    document.getElementById('char-count').textContent = '0 / 1000';
+    loadPosts();
+  } catch (e) {
+    err.textContent = e.message || 'Error al publicar.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publicar';
+  }
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
