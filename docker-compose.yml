@@ -26,6 +26,10 @@ services:
       - SYD_DATABASE_URL=postgresql://syd_user:syd_password@syd_postgres:5432/syd_campus
       - SYD_JWT_SECRET=ea69bbf5c04b162dfe21dbacb237eaed5c4c0c1fb9837792bed887321d9457c8cdf801ae761ec97d8c3585aaf546b7f14bd8861dd1cf013ed919537759257d75
       - SYD_NEWS_SECRET=1bfdc3011278d1a1c30fcced4400328580b0235b3742239d85d16132297f4fe0
+      - SMTP_HOST=mailserver
+      - SMTP_PORT=587
+      - SMTP_USER=syd@bertcrypto.com
+      - SMTP_PASS=SydAdminMail123.+
     volumes:
       - ./data:/app/data:ro
     networks:

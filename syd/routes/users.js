@@ -2,8 +2,20 @@
 const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const db = require('../db');
 const { setAuthCookie, clearAuthCookie, requireAuth } = require('../auth');
+
+const mailer = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'mailserver',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  tls: { rejectUnauthorized: false },
+});
 
 const router = Router();
 
@@ -152,8 +164,25 @@ router.post('/forgot', async (req, res) => {
     );
 
     const resetUrl = `https://bertcrypto.com/syd/reset.html?token=${token}`;
-    // Log para que el admin pueda enviar manualmente hasta que email esté configurado
-    console.log(`[syd] PASSWORD RESET REQUEST — user: ${user.username} (${email}) — url: ${resetUrl}`);
+    await mailer.sendMail({
+      from: '"SeedYourDreams" <syd@bertcrypto.com>',
+      to: email,
+      subject: 'Recupera tu contraseña — SeedYourDreams',
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:auto">
+          <h2 style="color:#1a1a2e">Recupera tu contraseña</h2>
+          <p>Hola <strong>${user.username}</strong>,</p>
+          <p>Haz clic en el botón para crear una nueva contraseña. El enlace es válido durante <strong>1 hora</strong>.</p>
+          <p style="text-align:center;margin:32px 0">
+            <a href="${resetUrl}" style="background:#6c47ff;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+              Restablecer contraseña
+            </a>
+          </p>
+          <p style="color:#888;font-size:12px">Si no solicitaste este cambio, ignora este email.</p>
+        </div>
+      `,
+    });
+    console.log(`[syd] reset email sent → ${email}`);
   } catch (err) {
     console.error('[syd] forgot error:', err.message);
   }
