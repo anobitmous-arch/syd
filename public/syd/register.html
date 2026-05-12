@@ -382,7 +382,7 @@ async function finish() {
     await syd.register(formData);
     localStorage.removeItem('syd_ref');
     await syd.selectPole({ pole_id: resultPoleId, avatar_id: selectedAvatarId });
-    location.href = '/syd/home.html';
+    location.href = '/syd/welcome.html';
   } catch (e) {
     showError(err, e.message || 'Error al crear la cuenta.');
     btn.disabled = false;
