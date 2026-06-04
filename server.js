@@ -13,6 +13,10 @@ app.use(cookieParser());
 const sydRouter = require('./syd/router');
 app.use('/api/syd', sydRouter);
 
+// Gastos — proxy IA
+const accountingRouter = require('./accounting/router');
+app.use('/accounting/api', accountingRouter);
+
 // Prefer a local, deploy-friendly path (VPS): ./data/lecciones.json
 // You can override with env var: LECCIONES_PATH=/abs/path/to/lecciones.json
 // Dev fallback: the original CRA path (so it keeps working locally as before).
@@ -75,6 +79,11 @@ app.get('/api/lecciones', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// SPA fallback para la admin de gastos
+app.get('/accounting/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'accounting', 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`bertcryptoSite running on http://localhost:${PORT}`);
