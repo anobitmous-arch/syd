@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: syd_user
       POSTGRES_PASSWORD: syd_password
       POSTGRES_DB: syd_campus
+    mem_limit: 512m
+    memswap_limit: 512m
     volumes:
       - syd_pgdata:/var/lib/postgresql/data
       - ./syd-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -19,6 +21,8 @@ services:
     build: .
     container_name: bertcrypto
     restart: unless-stopped
+    mem_limit: 512m
+    memswap_limit: 512m
     depends_on:
       - syd_postgres
     environment:
