@@ -10,6 +10,7 @@ RUN npm install --omit=dev
 # App source
 COPY server.js ./
 COPY syd ./syd
+COPY accounting ./accounting
 COPY public ./public
 
 # Data folder (mounted in VPS)

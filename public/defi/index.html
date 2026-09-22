@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Plan DeFi — BertCrypto</title>
+  <meta name="description" content="Plan de acción DeFi con majors: ETH, BTC, SOL, HYPE y stables productivas. Orden de ataque tras el movimiento del 18-21 de septiembre de 2026." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #070d12;
+      --panel: #0c1620;
+      --text: #e4eff8;
+      --muted: #7a9ab8;
+      --border: rgba(255,255,255,.08);
+      --green: #2ee59d;
+      --blue: #5baeff;
+      --orange: #ff9f43;
+      --violet: #a78bfa;
+      --gray: #8b9bb0;
+      --red: #ff6b6b;
+      --green-dim: rgba(46,229,157,.10);
+      --blue-dim: rgba(91,174,255,.10);
+      --orange-dim: rgba(255,159,67,.10);
+      --red-dim: rgba(255,107,107,.10);
+      --gray-dim: rgba(139,155,176,.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(900px 600px at 10% -5%, rgba(46,229,157,.10) 0%, transparent 55%),
+        radial-gradient(700px 500px at 90% 10%, rgba(91,174,255,.08) 0%, transparent 55%);
+    }
+    main { position: relative; }
+    .wrap { max-width: 940px; margin: 0 auto; padding: 0 16px; }
+    a { color: var(--blue); }
+    .muted { color: var(--muted); }
+    .num { font-variant-numeric: tabular-nums; }
+
+    header.hero { padding: 56px 0 24px; }
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--green); }
+    h1 { font-size: clamp(28px, 5vw, 42px); line-height: 1.15; letter-spacing: -.5px; margin: 10px 0 14px; }
+    .lede { color: var(--muted); max-width: 660px; font-size: 16px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 26px; }
+    .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .kpi .k { font-size: 12px; color: var(--muted); }
+    .kpi .v { font-size: 20px; font-weight: 800; margin-top: 2px; line-height: 1.3; }
+
+    nav.toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 22px 0 8px; }
+    nav.toc a { font-size: 13px; color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; }
+    nav.toc a:hover { color: var(--text); border-color: rgba(46,229,157,.35); }
+
+    section { padding: 34px 0 6px; }
+    h2 { font-size: 22px; letter-spacing: -.2px; margin-bottom: 6px; }
+    h2 .n { color: var(--green); font-variant-numeric: tabular-nums; margin-right: 8px; }
+    h3 { font-size: 16px; margin-bottom: 4px; }
+    .sub { color: var(--muted); margin-bottom: 18px; max-width: 720px; }
+
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+
+    ul.clean { list-style: none; }
+    ul.clean li { padding-left: 16px; position: relative; margin-top: 6px; }
+    ul.clean li::before { content: ''; position: absolute; left: 2px; top: .72em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+
+    .news { display: grid; gap: 8px; }
+    .news .item { display: grid; grid-template-columns: 84px 1fr; gap: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .news .d { font-size: 12px; font-weight: 700; color: var(--green); padding-top: 2px; }
+    .news .so { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    .pill { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+    .p-early { background: var(--green-dim); color: var(--green); }
+    .p-time { background: var(--blue-dim); color: var(--blue); }
+    .p-late { background: var(--orange-dim); color: var(--orange); }
+    .p-gone { background: var(--red-dim); color: var(--red); }
+    .p-wait { background: var(--gray-dim); color: var(--gray); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    td.r, th.r { text-align: right; }
+    tfoot td { font-weight: 800; border-top: 1px solid var(--border); border-bottom: none; }
+    .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; }
+
+    .bar { display: flex; height: 38px; border-radius: 10px; overflow: hidden; gap: 2px; margin: 8px 0 16px; }
+    .bar > div { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #06120d; white-space: nowrap; overflow: hidden; }
+    .c-eth { background: var(--blue); } .c-btc { background: var(--orange); } .c-sol { background: var(--violet); } .c-hype { background: var(--green); } .c-usd { background: var(--gray); }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; }
+
+    .alloc { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .alloc .card { display: flex; flex-direction: column; gap: 6px; }
+    .alloc .amt { font-size: 24px; font-weight: 800; }
+    .alloc .row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; border-top: 1px solid var(--border); padding-top: 6px; }
+    .alloc .row span:first-child { color: var(--muted); }
+    .alloc .row span:last-child { text-align: right; }
+
+    .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; }
+    .flow .box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+    .flow .box b { display: block; margin-bottom: 4px; }
+    .flow .box span { font-size: 13px; color: var(--muted); }
+    .flow .arrow { display: grid; place-items: center; color: var(--green); font-size: 20px; font-weight: 800; }
+    @media (max-width: 720px) {
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); padding: 2px 0; }
+    }
+
+    .phase { margin-top: 18px; }
+    .phase-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .phase-h h3 { margin: 0; }
+    ol.steps { list-style: none; counter-reset: s var(--start, 0); }
+    ol.steps > li { counter-increment: s; position: relative; padding: 14px 16px 14px 56px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+    ol.steps > li + li { margin-top: 8px; }
+    ol.steps > li::before { content: counter(s); position: absolute; left: 16px; top: 14px; width: 26px; height: 26px; border-radius: 8px; background: var(--green-dim); color: var(--green); font-weight: 800; font-size: 13px; display: grid; place-items: center; }
+    ol.steps .muted { font-size: 14px; margin-top: 2px; }
+
+    .checklist label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .checklist label:last-child { border-bottom: none; }
+    .checklist input { margin-top: 5px; width: 16px; height: 16px; accent-color: var(--green); flex-shrink: 0; }
+    .checklist input:checked + span { color: var(--muted); text-decoration: line-through; }
+    .check-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+    .btn { font: inherit; font-size: 13px; color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+    .btn:hover { color: var(--text); }
+
+    .callout { border-left: 3px solid var(--green); background: var(--green-dim); padding: 14px 16px; border-radius: 0 12px 12px 0; }
+
+    footer { padding: 40px 0 60px; color: var(--muted); font-size: 13px; }
+    footer li { margin-top: 4px; }
+
+    @media (max-width: 560px) {
+      header.hero { padding-top: 36px; }
+      .bar > div { font-size: 10px; }
+      .news .item { grid-template-columns: 1fr; gap: 2px; }
+      ol.steps > li { padding-left: 50px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header class="hero wrap">
+    <div class="eyebrow">BertCrypto · Plan DeFi · v2 · 22 sep 2026</div>
+    <h1>Majors productivos: dónde atacar primero</h1>
+    <p class="lede">1.000 $ repartidos entre ETH, BTC, SOL, HYPE y stables. Cada activo genera su rendimiento nativo, y el colateral financia una pata en dólares que se coloca donde el préstamo paga más. Horizonte de 6 a 12 meses, con intervención a final de cada mes.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="k">Capital</div><div class="v num">1.000 $</div></div>
+      <div class="kpi"><div class="k">Exposición a majors</div><div class="v num">80 %</div></div>
+      <div class="kpi"><div class="k">Rendimiento nativo estimado</div><div class="v num green">≈ 4-5 %</div></div>
+      <div class="kpi"><div class="k">Primer movimiento</div><div class="v">Préstamos de Hyperliquid</div></div>
+    </div>
+    <nav class="toc">
+      <a href="#ahora">Qué ha pasado</a>
+      <a href="#tarde">¿Voy tarde?</a>
+      <a href="#asignacion">Asignación</a>
+      <a href="#motor">Cómo encaja</a>
+      <a href="#orden">Orden de ataque</a>
+      <a href="#mensual">Fin de mes</a>
+      <a href="#radar">Radar</a>
+    </nav>
+  </header>
+
+  <section id="ahora" class="wrap">
+    <h2><span class="n">01</span>Qué ha pasado del 18 al 21 de septiembre</h2>
+    <p class="sub">Los dos vídeos se grabaron antes de esto. Cambia el orden de prioridades, no la estructura.</p>
+    <div class="news">
+      <div class="item"><div class="d">18 sep</div><div><b>Hyperliquid lanza préstamos nativos ("manual lending") en HyperCore.</b> Se presta USDC/USDT contra HYPE (LTV 65 %, liquidación al 82,5 %) o BTC (LTV 50 %, liquidación al 75 %). 269 M$ prestados el primer día.<div class="so">Cada préstamo sale de un prestamista real: quien pone USDC cobra lo que pagan los prestatarios.</div></div></div>
+      <div class="item"><div class="d">18-20 sep</div><div><b>Macro:</b> la Fed sube tipos, el Banco de Japón sube a máximos de 31 años y el Senado tumba la Clarity Act. BTC no baja de 75k en ningún momento.</div></div>
+      <div class="item"><div class="d">21 sep</div><div><b>BTC toca 85,1k (+5,7 %) y ETH 2,71k (+5,9 %): máximos de 8 meses.</b> Unos 648 M$ en cortos liquidados.</div></div>
+      <div class="item"><div class="d">21 sep</div><div><b>HYPE marca máximo histórico por encima de 90 $</b>, impulsado por el lanzamiento de los préstamos.</div></div>
+      <div class="item"><div class="d">29 sep</div><div><b>Se acaba la subvención de gas de Robinhood Chain.</b> Unos 1.000 M$ de TVL, y The Standard Reserve mete unos 14 M$ en los pools de acciones. Más liquidez y gas de pago significan menos comisión por LP.</div></div>
+      <div class="item"><div class="d">Contexto</div><div>El TVL de DeFi ha caído un 39 % en 2026 (unos 70.000 M$). Las recompensas del restaking están por debajo del 1 %. El exploit de KelpDAO (abril) disparó el coste de pedir ETH prestado al 8,7 % y dio la vuelta a los loops de wstETH durante semanas.</div></div>
+    </div>
+  </section>
+
+  <section id="tarde" class="wrap">
+    <h2><span class="n">02</span>¿Voy tarde?</h2>
+    <p class="sub">Un veredicto por cada oportunidad que salía en los vídeos, más las que han aparecido esta semana.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Oportunidad</th><th>Estado</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><b>Prestar USDC en Hyperliquid</b></td><td><span class="pill p-early">Temprano</span></td><td>Lleva 4 días abierto y tiene mucha demanda. Los primeros prestamistas cobran tipos altos hasta que llega más oferta y los comprime.</td></tr>
+          <tr><td><b>Staking de SOL (JitoSOL)</b></td><td><span class="pill p-time">A tiempo</span></td><td>Es estructural: el rendimiento de staking más alto entre los majors. Los volúmenes en Solana están subiendo.</td></tr>
+          <tr><td><b>wstETH como colateral</b></td><td><span class="pill p-time">A tiempo</span></td><td>El staking de ETH no caduca. ETH aún está un 40 % por debajo de sus máximos de 2025.</td></tr>
+          <tr><td><b>Loop de wstETH en e-Mode</b></td><td><span class="pill p-wait">Condicional</span></td><td>Solo si pedir WETH cuesta al menos 1 punto menos que el staking. Hay que mirarlo el día que se entre, no antes.</td></tr>
+          <tr><td><b>Comprar HYPE</b></td><td><span class="pill p-late">Tarde para momentum</span></td><td>Está en máximo histórico justo después de la noticia. Para acumular vale, pero en tramos.</td></tr>
+          <tr><td><b>BTC en DeFi</b></td><td><span class="pill p-time">Como colateral</span></td><td>Prestar WBTC rinde casi un 0 % y Babylon/LBTC un 1-3 %. El rendimiento del BTC sale de usarlo como colateral.</td></tr>
+          <tr><td><b>LPs en Robinhood Chain</b></td><td><span class="pill p-late">Tarde</span></td><td>La fase de comisiones desproporcionadas fue julio y agosto. El 29 de septiembre se acaba el gas gratis y entra liquidez profesional.</td></tr>
+          <tr><td><b>Puntos LRT / restaking</b></td><td><span class="pill p-gone">Pasado</span></td><td>AVS por debajo del 1 %, airdrops repartidos y slashing activo desde abril.</td></tr>
+          <tr><td><b>Kinza (BNB)</b></td><td><span class="pill p-gone">Pasado</span></td><td>Tenía sentido por el airdrop, y ya no lo hay.</td></tr>
+          <tr><td><b>Aave v4</b></td><td><span class="pill p-wait">Esperar</span></td><td>Está en Ethereum y Avalanche. Cuando llegue a Arbitrum, se migra.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="asignacion" class="wrap">
+    <h2><span class="n">03</span>Asignación</h2>
+    <p class="sub">Cinco frentes en tres entornos: Arbitrum (ETH, BTC), Solana (SOL) e Hyperliquid (HYPE, USDC). Los APY son estimaciones a 22 de septiembre: manda la app.</p>
+
+    <div class="bar" role="img" aria-label="ETH 30%, BTC 20%, SOL 15%, HYPE 15%, USDC 20%">
+      <div class="c-eth" style="flex:30">ETH 30 %</div>
+      <div class="c-btc" style="flex:20">BTC 20 %</div>
+      <div class="c-sol" style="flex:15">SOL 15 %</div>
+      <div class="c-hype" style="flex:15">HYPE 15 %</div>
+      <div class="c-usd" style="flex:20">USDC 20 %</div>
+    </div>
+
+    <div class="alloc">
+      <div class="card">
+        <div><span class="dot c-eth"></span><b>ETH</b></div>
+        <div class="amt num">300 $</div>
+        <div class="muted">wstETH en Aave v3, Arbitrum. Hace de colateral principal.</div>
+        <div class="row"><span>Rendimiento</span><span class="num">≈ 3-4 % staking</span></div>
+        <div class="row"><span>Dónde</span><span>Aave · Arbitrum</span></div>
+      </div>
+      <div class="card">
+        <div><span class="dot c-btc"></span><b>BTC</b></div>
+        <div class="amt num">200 $</div>
+        <div class="muted">WBTC en la misma cuenta de Aave. No rinde por sí mismo; su papel es sumar colateral.</div>
+        <div class="row"><span>Rendimiento</span><span class="num">≈ 0 % + préstamo</span></div>
+        <div class="row"><span>Dónde</span><span>Aave · Arbitrum</span></div>
+      </div>
+      <div class="card">
+        <div><span class="dot c-sol"></span><b>SOL</b></div>
+        <div class="amt num">150 $</div>
+        <div class="muted">JitoSOL: staking líquido que capitaliza solo. Se usa lo que ya tienes en Solana.</div>
+        <div class="row"><span>Rendimiento</span><span class="num">≈ 6-7 %</span></div>
+        <div class="row"><span>Dónde</span><span>Jito · Solana</span></div>
+      </div>
+      <div class="card">
+        <div><span class="dot c-hype"></span><b>HYPE</b></div>
+        <div class="amt num">150 $</div>
+        <div class="muted">Compra en 3 tramos y staking líquido a kHYPE (Kinetiq). Se puede usar luego en los mercados de HyperEVM.</div>
+        <div class="row"><span>Rendimiento</span><span class="num">≈ 2,4 %</span></div>
+        <div class="row"><span>Dónde</span><span>Kinetiq · HyperEVM</span></div>
+      </div>
+      <div class="card">
+        <div><span class="dot c-usd"></span><b>USDC</b></div>
+        <div class="amt num">200 $</div>
+        <div class="muted">Prestado a otros usuarios en Hyperliquid. Se le suma el USDC pedido contra ETH y BTC (ver §04).</div>
+        <div class="row"><span>Rendimiento</span><span>Tipo de la app*</span></div>
+        <div class="row"><span>Dónde</span><span>HyperCore</span></div>
+      </div>
+    </div>
+    <p class="muted" style="font-size:13px;margin-top:10px">* Mercado de 4 días: el tipo cambia a diario. Referencia de mínimos: USDC en Morpho (Gauntlet Core, Arbitrum) ronda el 5,25 %. Si Hyperliquid paga menos que eso, el USDC va a Morpho.</p>
+  </section>
+
+  <section id="motor" class="wrap">
+    <h2><span class="n">04</span>Cómo encaja: el colateral trabaja dos veces</h2>
+    <p class="sub">ETH y BTC siguen en tu poder y expuestos al precio. Contra ellos se pide un poco de USDC, que se presta en el mercado que más paga. Lo que se gana es la diferencia entre ambos tipos.</p>
+    <div class="flow">
+      <div class="box"><b>Colateral · 500 $</b><span>wstETH + WBTC en Aave Arbitrum. Sigue rindiendo el staking y la exposición a precio.</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><b>Préstamo · 125 $ USDC</b><span>LTV del 25 %: holgura hasta una caída de unos 65 % de ETH/BTC. Coste: el tipo de préstamo de USDC en Aave.</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><b>Prestado · 325 $ USDC</b><span>200 $ propios + 125 $ pedidos, prestados en Hyperliquid (o en Morpho si paga más).</span></div>
+    </div>
+    <div class="callout" style="margin-top:14px">
+      <b>Solo se activa si compensa:</b> tipo de préstamo en Hyperliquid (o Morpho) − tipo de préstamo de USDC en Aave ≥ 2 puntos. Si no llega, no se pide nada y el colateral se queda solo con el staking. Se revisa cada fin de mes.
+    </div>
+  </section>
+
+  <section id="orden" class="wrap">
+    <h2><span class="n">05</span>Orden de ataque</h2>
+    <p class="sub">Primero lo que depende del momento, después lo estructural y al final lo condicional.</p>
+
+    <div class="phase">
+      <div class="phase-h"><span class="pill p-early">Esta semana</span><h3>Lo que depende del momento</h3></div>
+      <ol class="steps">
+        <li><b>USDC a Hyperliquid y préstamo.</b> Pasa 200 $ en USDC de Arbitrum a Hyperliquid y préstalos en el mercado de USDC. Apunta el tipo de entrada.<div class="muted">Es lo único del plan con ventaja real por llegar pronto: la oferta aún no ha alcanzado a la demanda.</div></div>
+        <li><b>SOL → JitoSOL.</b> Desde tu wallet de Solana, 150 $ de SOL a JitoSOL (en jito.network o con cualquier swap de Jupiter).<div class="muted">Un solo paso y se capitaliza solo; no hace falta tocarlo en todo el horizonte.</div></div>
+        <li><b>ETH → wstETH en Aave Arbitrum.</b> Cambia 300 $ de ETH a wstETH y deposítalo en Aave v3. Deja unos 10 $ de ETH aparte para gas.</li>
+      </ol>
+    </div>
+
+    <div class="phase">
+      <div class="phase-h"><span class="pill p-time">Semanas 2-3</span><h3>Lo estructural, en tramos</h3></div>
+      <ol class="steps" style="--start:3">
+        <li><b>HYPE en 3 tramos de 50 $</b>, uno por semana. Cada tramo pasa a kHYPE en Kinetiq.<div class="muted">No se persigue el máximo de 90 $ con todo de golpe. Si hay retroceso, los tramos lo aprovechan.</div></div>
+        <li><b>WBTC a la misma cuenta de Aave.</b> Compra 200 $ de WBTC en Arbitrum y deposítalo como colateral, junto al wstETH.</li>
+        <li><b>Activa el préstamo de §04 si compensa.</b> Pide 125 $ en USDC contra el colateral (LTV del 25 %) y envíalos a donde se estén prestando tus USDC.<div class="muted">Anota el factor de salud y el precio de liquidación de ETH/BTC que te muestra Aave.</div></div>
+      </ol>
+    </div>
+
+    <div class="phase">
+      <div class="phase-h"><span class="pill p-wait">Mes 2 en adelante</span><h3>Lo condicional</h3></div>
+      <ol class="steps" style="--start:6">
+        <li><b>Loop de wstETH (x2, e-Mode).</b> Solo si el préstamo de WETH cuesta al menos 1 punto menos que el staking. Añade unos 3-4 % al tramo de ETH.</li>
+        <li><b>Fijar el rendimiento del ETH en Pendle.</b> Pasar parte del wstETH a PT-wstETH o PT-weETH, a vencimiento, si el tipo implícito supera al staking variable.</li>
+        <li><b>kHYPE como colateral en HyperEVM</b> o en el propio sistema de préstamos de Hyperliquid, cuando haya datos de un mes de tipos.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="mensual" class="wrap">
+    <h2><span class="n">06</span>Intervención de fin de mes</h2>
+    <div class="card checklist">
+      <div class="check-head">
+        <h3 id="month-label">Revisión del mes</h3>
+        <button class="btn" id="reset" type="button">Reiniciar</button>
+      </div>
+      <label><input type="checkbox" data-k="1"><span><b>Saldos y rendimiento:</b> anota cada posición en unidades del activo (no en $). El objetivo es acumular ETH, BTC, SOL y HYPE.</span></label>
+      <label><input type="checkbox" data-k="2"><span><b>Diferencial del préstamo:</b> tipo de préstamo en Hyperliquid o Morpho frente al coste de USDC en Aave. Si baja de 2 puntos, devuelve el préstamo.</span></label>
+      <label><input type="checkbox" data-k="3"><span><b>Mejor destino para el USDC:</b> compara Hyperliquid con Morpho y mueve el dinero si la diferencia supera 1,5 puntos.</span></label>
+      <label><input type="checkbox" data-k="4"><span><b>Recoger y reinvertir:</b> el interés en USDC compra más del major que esté más por debajo de su peso objetivo.</span></label>
+      <label><input type="checkbox" data-k="5"><span><b>Pesos:</b> si un major se desvía más de 8 puntos de su peso (por precio), rebalancea con ese interés o con capital nuevo, no vendiendo.</span></label>
+      <label><input type="checkbox" data-k="6"><span><b>Loop:</b> ¿se cumple ya la condición para el loop de wstETH? ¿Y la de Pendle?</span></label>
+      <label><input type="checkbox" data-k="7"><span><b>Factor de salud</b> en Aave por encima de 2,5. Si el precio ha subido mucho, puedes pedir más; si ha bajado, devuelve.</span></label>
+      <label><input type="checkbox" data-k="8"><span><b>Radar:</b> revisa §07 y elige un tema que estudiar el mes siguiente.</span></label>
+    </div>
+    <p class="muted" style="font-size:13px;margin-top:8px">JitoSOL, kHYPE, wstETH y los depósitos en Aave capitalizan solos. Las casillas se guardan en este navegador.</p>
+  </section>
+
+  <section id="radar" class="wrap">
+    <h2><span class="n">07</span>Radar: qué vigilar y qué lo activa</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tema</th><th>Qué lo activa</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td><b>Coste de pedir WETH en Aave</b></td><td>Por debajo del staking de wstETH − 1 punto</td><td>Loop x2 en e-Mode (paso 7)</td></tr>
+          <tr><td><b>Aave v4 en Arbitrum</b></td><td>Anuncio del despliegue</td><td>Migrar la cuenta en una sesión</td></tr>
+          <tr><td><b>Tipo de préstamo en Hyperliquid</b></td><td>Por debajo de Morpho durante 2 semanas</td><td>USDC a Morpho Gauntlet Core</td></tr>
+          <tr><td><b>Robinhood Chain</b></td><td>Datos de LP de octubre, ya sin gas subvencionado</td><td>Valorar solo pares acción/ETH o acción/stable</td></tr>
+          <tr><td><b>Mercados de HyperEVM</b></td><td>kHYPE aceptado como colateral con mercados profundos</td><td>Pasar kHYPE a colateral (paso 9)</td></tr>
+          <tr><td><b>Euler v2</b></td><td>Vault de ETH o BTC con tipo mejor que Aave</td><td>Probar con una parte del colateral</td></tr>
+          <tr><td><b>Pendle, PT de ETH</b></td><td>Tipo implícito por encima del staking variable</td><td>Fijar parte del ETH (paso 8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <p>Plan vivo: se actualiza con cada vídeo nuevo de la serie y en cada intervención mensual. Los tipos y precios corresponden al 21-22 de septiembre de 2026; manda la app oficial de cada protocolo.</p>
+    <p style="margin-top:14px"><b>Fuentes</b></p>
+    <ul class="clean">
+      <li><a href="https://finance.yahoo.com/personal-finance/investing/article/bitcoin-and-ethereum-prices-today-monday-september-21-2026-crypto-prices-hit-highest-levels-in-8-months-143444230.html" rel="noopener">BTC y ETH en máximos de 8 meses, 21 sep — Yahoo Finance</a></li>
+      <li><a href="https://investingnews.com/cryptocurrency-market-recap/" rel="noopener">BTC a 85k, 648 M$ en cortos liquidados — INN</a></li>
+      <li><a href="https://www.kucoin.com/news/flash/hyperliquid-launches-manual-lending-feature-with-hype-and-btc-as-collateral" rel="noopener">Hyperliquid lanza los préstamos nativos — KuCoin</a></li>
+      <li><a href="https://www.fxstreet.com/cryptocurrencies/news/hype-hits-record-high-as-hyperliquid-opens-borrowing-to-token-holders-202609211257" rel="noopener">HYPE en máximo histórico — FXStreet</a></li>
+      <li><a href="https://www.datawallet.com/crypto/robinhood-chain-statistics" rel="noopener">Estadísticas de Robinhood Chain — Datawallet</a></li>
+      <li><a href="https://cryptobriefing.com/standard-reserve-robinhood-chain-liquidity-engine/" rel="noopener">Standard Reserve y la liquidez de Robinhood Chain — Crypto Briefing</a></li>
+      <li><a href="https://github.com/Ricosworks1/market-intelligence-reports/releases/tag/market-intel-defi-yield-bifurcation-20260919" rel="noopener">Rendimientos DeFi, 19 sep — Market Intel</a></li>
+      <li><a href="https://www.bitget.com/news/detail/12560605477916" rel="noopener">El TVL de DeFi cae un 39 % en 2026 — Bitget</a></li>
+      <li><a href="https://www.talos.com/insights/state-of-the-network-365" rel="noopener">Tipos de Aave y loops tras KelpDAO — Talos</a></li>
+      <li><a href="https://www.spark.money/research/btcfi-bitcoin-defi-landscape-2026" rel="noopener">BTCfi en 2026 — Spark</a></li>
+      <li><a href="https://hyperliquidguide.com/ecosystem" rel="noopener">Ecosistema de Hyperliquid y kHYPE — Hyperliquid Guide</a></li>
+      <li><a href="https://www.stakingrewards.com/defi/0x7e97fa6893871a2751b5fe961978dccb2c201e65" rel="noopener">Morpho Gauntlet USDC Core, Arbitrum — Staking Rewards</a></li>
+    </ul>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const now = new Date();
+  const key = `defi-check-${now.getFullYear()}-${now.getMonth() + 1}`;
+  const label = now.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  document.getElementById('month-label').textContent = `Revisión de ${label}`;
+
+  const boxes = [...document.querySelectorAll('.checklist input')];
+  const read = () => { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; } };
+  const write = (state) => { try { localStorage.setItem(key, JSON.stringify(state)); } catch {} };
+
+  const state = read();
+  boxes.forEach((b) => {
+    b.checked = !!state[b.dataset.k];
+    b.addEventListener('change', () => { const s = read(); s[b.dataset.k] = b.checked; write(s); });
+  });
+  document.getElementById('reset').addEventListener('click', () => { write({}); boxes.forEach((b) => (b.checked = false)); });
+})();
+</script>
+</body>
+</html>
