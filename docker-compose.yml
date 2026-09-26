@@ -1,10 +1,14 @@
 name: bertcrypto
 
 services:
+  # SYD APAGADO 2026-09-26 (decisión Bertys: guardar hasta tener cartera de clientes).
+  # Dump + volumen en ~/backups/syd/. Volumen syd_pgdata se CONSERVA.
+  # Reactivar: docker compose --profile syd up -d syd_postgres  (y devolver depends_on a web)
   syd_postgres:
+    profiles: ["syd"]
     image: postgres:15
     container_name: syd_postgres
-    restart: unless-stopped
+    restart: "no"
     environment:
       POSTGRES_USER: syd_user
       POSTGRES_PASSWORD: syd_password
@@ -23,8 +27,6 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     memswap_limit: 512m
-    depends_on:
-      - syd_postgres
     environment:
       - PORT=5177
       - SYD_DATABASE_URL=postgresql://syd_user:syd_password@syd_postgres:5432/syd_campus
