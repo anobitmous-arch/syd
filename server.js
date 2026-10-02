@@ -78,6 +78,15 @@ app.get('/api/lecciones', (req, res) => {
   });
 });
 
+// Bertrader: página privada con clave en el enlace. Va antes del estático a propósito:
+// sus ficheros viven en ./private, fuera de ./public.
+const { bertraderRouter } = require('./bertrader/guard');
+app.use('/bertrader', bertraderRouter({
+  key: process.env.BERTRADER_KEY || '',
+  pageDir: path.join(__dirname, 'private', 'bertrader'),
+  dataDir: path.join(__dirname, 'data', 'bertrader'),
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // SPA fallback para la admin de gastos

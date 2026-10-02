@@ -11,6 +11,8 @@ RUN npm install --omit=dev
 COPY server.js ./
 COPY syd ./syd
 COPY accounting ./accounting
+COPY bertrader ./bertrader
+COPY private ./private
 COPY public ./public
 
 # Data folder (mounted in VPS)
