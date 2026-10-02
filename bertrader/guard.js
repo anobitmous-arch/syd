@@ -1,5 +1,9 @@
 // Acceso a /bertrader: clave en el enlace, cookie después. La página es privada y sin
 // indexar; sin cookie válida todo responde 404, para no delatar que existe.
+//
+// Dos secretos distintos a propósito. La clave del enlace (`key`) viaja en la URL y acaba en
+// el access log del proxy: solo sirve para dar de alta un dispositivo y se puede vaciar
+// después. La cookie se firma con `cookieSecret`, que nunca sale del servidor.
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -15,14 +19,17 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
-// La cookie lleva un HMAC de la clave, nunca la clave. Cambiar la clave las invalida todas.
-function cookieValue(key) {
-  return crypto.createHmac('sha256', String(key)).update('bertrader-cookie-v1').digest('hex');
+// La cookie lleva un HMAC del secreto, nunca el secreto. Cambiar el secreto las invalida todas.
+function cookieValue(cookieSecret) {
+  return crypto.createHmac('sha256', String(cookieSecret)).update('bertrader-cookie-v1').digest('hex');
 }
 
-function bertraderRouter({ key, pageDir, dataDir }) {
+function bertraderRouter({ key, cookieSecret, pageDir, dataDir }) {
   const router = express.Router();
   const notFound = (res) => res.status(404).type('text/plain').send('Not found');
+  const setCookie = (res) => res.cookie(COOKIE, cookieValue(cookieSecret), {
+    httpOnly: true, secure: true, sameSite: 'lax', path: '/bertrader', maxAge: MAX_AGE_MS,
+  });
 
   router.use((req, res, next) => {
     res.set({
@@ -30,18 +37,17 @@ function bertraderRouter({ key, pageDir, dataDir }) {
       'Cache-Control': 'no-store',
       'Referrer-Policy': 'no-referrer',
     });
-    if (!key) return notFound(res);
+    if (!cookieSecret) return notFound(res);
     if (Object.prototype.hasOwnProperty.call(req.query, 'k')) {
       const k = req.query.k;
-      if (typeof k !== 'string' || !k || !safeEqual(k, key)) return notFound(res);
-      res.cookie(COOKIE, cookieValue(key), {
-        httpOnly: true, secure: true, sameSite: 'lax', path: '/bertrader', maxAge: MAX_AGE_MS,
-      });
+      // Con la clave del enlace vacía el enlace está retirado: nadie se da de alta.
+      if (!key || typeof k !== 'string' || !k || !safeEqual(k, key)) return notFound(res);
+      setCookie(res);
       // Redirección relativa: detrás de Traefik el servidor no conoce su URL pública.
       return res.redirect(302, '/bertrader/');
     }
     const cookie = req.cookies && req.cookies[COOKIE];
-    if (typeof cookie !== 'string' || !cookie || !safeEqual(cookie, cookieValue(key))) return notFound(res);
+    if (typeof cookie !== 'string' || !cookie || !safeEqual(cookie, cookieValue(cookieSecret))) return notFound(res);
     next();
   });
 
@@ -53,7 +59,11 @@ function bertraderRouter({ key, pageDir, dataDir }) {
   };
 
   // `cacheControl: false`: si no, `sendFile` pisa el `no-store` de arriba con `public, max-age=0`.
-  router.get('/', (req, res) => res.sendFile(path.join(pageDir, 'index.html'), { cacheControl: false }));
+  router.get('/', (req, res) => {
+    // Cada visita renueva los 90 días: quien la abre a diario no se queda fuera sin aviso.
+    setCookie(res);
+    res.sendFile(path.join(pageDir, 'index.html'), { cacheControl: false });
+  });
   router.get('/data.json', sendData('data.json', 'application/json'));
   router.get('/reglas.md', sendData('reglas.md', 'text/plain; charset=utf-8'));
   router.use(express.static(pageDir, { index: false, cacheControl: false }));

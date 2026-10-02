@@ -37,6 +37,11 @@
   }
 
   window.addEventListener('hashchange', () => { paint(); window.scrollTo(0, 0); });
+  // Al reabrir la pestaña (o el icono de la pantalla de inicio) se piden datos frescos, sin
+  // esperar al siguiente intervalo: los temporizadores se congelan con la página en segundo plano.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') load().then(paint);
+  });
   Promise.all([load(), loadRules()]).then(paint);
   // El export corre cada 5 minutos; la antigüedad del dato se refresca cada minuto.
   setInterval(() => load().then(paint), 5 * 60 * 1000);

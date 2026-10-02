@@ -8,8 +8,9 @@ const cookieParser = require('cookie-parser');
 const { bertraderRouter, cookieValue } = require('./guard');
 
 const KEY = 'a'.repeat(64);
+const SECRET = 'c'.repeat(64);
 
-function start(t, { key = KEY, withData = true } = {}) {
+function start(t, { key = KEY, cookieSecret = SECRET, withData = true } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bt-guard-'));
   const pageDir = path.join(dir, 'page');
   const dataDir = path.join(dir, 'data');
@@ -23,7 +24,7 @@ function start(t, { key = KEY, withData = true } = {}) {
   }
   const app = express();
   app.use(cookieParser());
-  app.use('/bertrader', bertraderRouter({ key, pageDir, dataDir }));
+  app.use('/bertrader', bertraderRouter({ key, cookieSecret, pageDir, dataDir }));
   app.get('/', (req, res) => res.send('home'));
   return new Promise((resolve) => {
     const server = app.listen(0, '127.0.0.1', () => {
@@ -34,7 +35,7 @@ function start(t, { key = KEY, withData = true } = {}) {
 }
 
 const get = (url, cookie) => fetch(url, { redirect: 'manual', headers: cookie ? { cookie } : {} });
-const session = (key = KEY) => `bt_session=${cookieValue(key)}`;
+const session = (secret = SECRET) => `bt_session=${cookieValue(secret)}`;
 
 test('without a key or a cookie everything is 404', async (t) => {
   const base = await start(t);
@@ -65,7 +66,8 @@ test('the right key sets the cookie and redirects to a clean URL', async (t) => 
   assert.match(cookie, /SameSite=Lax/i);
   assert.match(cookie, /Path=\/bertrader/i);
   assert.match(cookie, /Max-Age=7776000/i);
-  assert.ok(!cookie.includes(KEY), 'la cookie no lleva la clave');
+  assert.ok(!cookie.includes(KEY) && !cookie.includes(SECRET), 'la cookie no lleva la clave ni el secreto');
+  assert.strictEqual(cookie.split(';')[0], session());
 });
 
 test('a valid cookie serves the page, its files and the data', async (t) => {
@@ -88,7 +90,8 @@ test('a tampered cookie is 404', async (t) => {
   const base = await start(t);
   assert.strictEqual((await get(base + '/bertrader/', 'bt_session=' + '0'.repeat(64))).status, 404);
   assert.strictEqual((await get(base + '/bertrader/', 'bt_session=')).status, 404);
-  assert.strictEqual((await get(base + '/bertrader/', session('otra-clave'))).status, 404);
+  assert.strictEqual((await get(base + '/bertrader/', session('otro-secreto'))).status, 404);
+  assert.strictEqual((await get(base + '/bertrader/', session(KEY))).status, 404, 'la clave del enlace no firma cookies');
 });
 
 test('repeated or empty k never opens the door', async (t) => {
@@ -97,10 +100,30 @@ test('repeated or empty k never opens the door', async (t) => {
   assert.strictEqual((await get(base + '/bertrader?k=')).status, 404);
 });
 
-test('an empty key disables the whole route', async (t) => {
-  const base = await start(t, { key: '' });
-  assert.strictEqual((await get(base + '/bertrader?k=')).status, 404);
+test('an empty cookie secret disables the whole route', async (t) => {
+  const base = await start(t, { cookieSecret: '' });
+  assert.strictEqual((await get(base + '/bertrader?k=' + KEY)).status, 404);
   assert.strictEqual((await get(base + '/bertrader/', session(''))).status, 404);
+});
+
+// La clave del enlace queda en el access log del proxy. Por eso es solo de alta: una vez dados
+// de alta los dispositivos se vacía, y las cookies (firmadas con otro secreto) siguen valiendo.
+test('retiring the link key closes the link but keeps enrolled devices in', async (t) => {
+  const base = await start(t, { key: '' });
+  assert.strictEqual((await get(base + '/bertrader?k=' + KEY)).status, 404);
+  assert.strictEqual((await get(base + '/bertrader?k=')).status, 404);
+  assert.strictEqual((await get(base + '/bertrader/', session())).status, 200);
+  assert.strictEqual((await get(base + '/bertrader/data.json', session())).status, 200);
+});
+
+test('opening the page renews the cookie, the data requests do not', async (t) => {
+  const base = await start(t);
+  const page = await get(base + '/bertrader/', session());
+  const renewed = page.headers.get('set-cookie');
+  assert.strictEqual(renewed.split(';')[0], session());
+  assert.match(renewed, /Max-Age=7776000/i);
+  assert.match(renewed, /HttpOnly/i);
+  assert.strictEqual((await get(base + '/bertrader/data.json', session())).headers.get('set-cookie'), null);
 });
 
 test('missing data answers 503 instead of a blank page', async (t) => {

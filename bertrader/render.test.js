@@ -181,3 +181,57 @@ test('an undecided proposal says why it expired', () => {
   assert.match(html, /Caducó: el precio se alejó de la entrada/);
   assert.match(html, /la estrategia cerró antes de decidir/);
 });
+
+test('unexpected data never leaves a blank page', () => {
+  const noPanel = sample();
+  delete noPanel.panel;
+  assert.match(view(noPanel, '#/'), /No se han podido pintar los datos/);
+  const noFrames = sample();
+  noFrames.panel.assets[0].timeframes = null;
+  assert.match(view(noFrames, '#/'), /No se han podido pintar los datos/);
+  assert.deepStrictEqual(R.route('#/activo/%E0%A4%A'), { view: 'panel' });
+});
+
+test('coming back to the tab reloads the data', async () => {
+  const fs = require('fs');
+  const path = require('path');
+  const vm = require('vm');
+  const src = fs.readFileSync(path.join(__dirname, '../private/bertrader/app.js'), 'utf8');
+  const listeners = {};
+  const fetched = [];
+  const els = { view: { innerHTML: '' }, status: { innerHTML: '' }, nav: { innerHTML: '' } };
+  const document = {
+    visibilityState: 'visible',
+    getElementById: (id) => els[id],
+    addEventListener: (name, fn) => { listeners[name] = fn; },
+  };
+  const window = { BTRender: R, addEventListener() {}, scrollTo() {} };
+  const fetch = async (url) => {
+    fetched.push(url);
+    return { ok: true, status: 200, json: async () => sample(), text: async () => '# Reglas' };
+  };
+  vm.runInNewContext(src, { window, document, location: { hash: '#/' }, fetch, setInterval: () => 0, Date, Promise });
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 10));
+  const loads = () => fetched.filter((url) => url.endsWith('data.json')).length;
+  await settle();
+  assert.strictEqual(loads(), 1);
+  assert.match(els.view.innerHTML, /Sin posiciones abiertas/);
+  document.visibilityState = 'hidden';
+  listeners.visibilitychange();
+  await settle();
+  assert.strictEqual(loads(), 1, 'al esconderse no recarga');
+  document.visibilityState = 'visible';
+  listeners.visibilitychange();
+  await settle();
+  assert.strictEqual(loads(), 2, 'al volver a primer plano recarga');
+});
+
+test('the mode and the freshness stay visible while scrolling', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const dir = path.join(__dirname, '../private/bertrader');
+  const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(dir, 'style.css'), 'utf8');
+  assert.match(html, /<div class="bar">[\s\S]*id="status"[\s\S]*id="nav"[\s\S]*<\/div>\s*<main/);
+  assert.match(css, /\.bar \{[^}]*position: sticky/);
+});

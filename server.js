@@ -83,6 +83,7 @@ app.get('/api/lecciones', (req, res) => {
 const { bertraderRouter } = require('./bertrader/guard');
 app.use('/bertrader', bertraderRouter({
   key: process.env.BERTRADER_KEY || '',
+  cookieSecret: process.env.BERTRADER_COOKIE_SECRET || '',
   pageDir: path.join(__dirname, 'private', 'bertrader'),
   dataDir: path.join(__dirname, 'data', 'bertrader'),
 }));

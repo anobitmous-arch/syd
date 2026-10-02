@@ -66,7 +66,13 @@
 
   function route(hash) {
     const parts = String(hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
-    if (parts[0] === 'activo' && parts[1]) return { view: 'activo', coin: decodeURIComponent(parts[1]) };
+    if (parts[0] === 'activo' && parts[1]) {
+      try {
+        return { view: 'activo', coin: decodeURIComponent(parts[1]) };
+      } catch (e) {
+        return { view: 'panel' };   // fragmento mal formado
+      }
+    }
     if (['diario', 'conducta', 'reglas'].includes(parts[0])) return { view: parts[0] };
     return { view: 'panel' };
   }
@@ -289,7 +295,16 @@
     return ERRORS[code] || `No se han podido cargar los datos (${code}).`;
   }
 
-  function render({ data, error, rules, hash, nowMs }) {
+  // Unos datos con una forma inesperada no pueden dejar la página muda en "Cargando…".
+  function render(args) {
+    try {
+      return draw(args);
+    } catch (e) {
+      return `<p class="empty">No se han podido pintar los datos (${esc(e && e.message)}). Recarga la página.</p>`;
+    }
+  }
+
+  function draw({ data, error, rules, hash, nowMs }) {
     if (!data) return `<p class="empty">${esc(errorText(error || 'cargando'))}</p>`;
     if (data.schema !== SCHEMA) {
       return '<p class="empty">El fichero trae una versión de datos que esta página no conoce. Recarga la página.</p>';
