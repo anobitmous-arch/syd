@@ -235,3 +235,16 @@ test('the mode and the freshness stay visible while scrolling', () => {
   assert.match(html, /<div class="bar">[\s\S]*id="status"[\s\S]*id="nav"[\s\S]*<\/div>\s*<main/);
   assert.match(css, /\.bar \{[^}]*position: sticky/);
 });
+
+test('lane events have a readable name', () => {
+  const data = sample({ journal: [
+    { type: 'event', kind: 'emergency_stop', at: '2026-10-03T02:00:00Z', day: '2026-10-03', coin: 'BTC',
+      note: 'Saltó el stop de emergencia: cerrada a 85.', mode: 'real', demo: false },
+    { type: 'event', kind: 'foreign_fill', at: '2026-10-03T03:00:00Z', day: '2026-10-03', coin: 'ETH',
+      note: 'Orden ajena: compra de 0.01 ETH a 2500.', mode: null, demo: false },
+  ] });
+  const html = view(data, '#/diario');
+  assert.match(html, /Stop de emergencia/);
+  assert.match(html, /Orden ajena/);
+  assert.ok(!html.includes('>emergency_stop<'), 'el nombre interno no se enseña');
+});

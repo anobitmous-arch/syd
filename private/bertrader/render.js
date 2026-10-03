@@ -15,6 +15,7 @@
   };
   const STATE_ES = { posicion: 'Posición abierta', propuesta: 'Propuesta pendiente', sin_senal: 'Sin señal' };
   const KIND_ES = { estudio: 'Estudio', investigacion: 'Investigación', trading: 'Trading' };
+  const EVENT_ES = { foreign_fill: 'Orden ajena', emergency_stop: 'Stop de emergencia' };
   const VIEWS = [['panel', '#/', 'Panel'], ['diario', '#/diario', 'Diario'], ['conducta', '#/conducta', 'Conducta'], ['reglas', '#/reglas', 'Reglas']];
   // Motivo de una propuesta sin decidir, tal como lo guarda BBots → frase legible.
   const EXPIRED_ES = { tiempo: 'Caducó por tiempo', precio: 'Caducó: el precio se alejó de la entrada' };
@@ -128,7 +129,7 @@
         `<p class="note">${esc(e.note)}</p></article>`;
     }
     if (e.type !== 'proposal') {
-      const what = e.type === 'manual_close' ? 'Cierre manual' : e.kind === 'foreign_fill' ? 'Orden ajena' : e.kind;
+      const what = e.type === 'manual_close' ? 'Cierre manual' : EVENT_ES[e.kind] || e.kind;
       return `<article class="entry entry-${e.type === 'manual_close' ? 'manual' : 'event'}">` +
         `<div class="entry-head"><span class="what">${esc(what)}</span>${coinLink(e.coin)}${tags(e)}${time}</div>` +
         `<p class="note">${esc(e.note)}</p></article>`;
