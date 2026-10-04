@@ -92,3 +92,50 @@ test('a generated_at in the future is not fresh', () => {
   assert.ok(M.isValid(morning({ generated_at: '2026-10-05T00:00:00Z' })));
   assert.ok(!M.isValid(morning({ kind: 'otro' })));
 });
+
+function candles(n) {
+  return Array.from({ length: n }, (_, i) => [i * 86400000, 100 + i, 102 + i, 99 + i, 101 + i]);
+}
+
+test('chart draws one candle per day and the EMA line', () => {
+  const svg = M.chartSvg(candles(90), Array.from({ length: 90 }, (_, i) => (i < 49 ? null : 100 + i)));
+  assert.match(svg, /^<svg/);
+  assert.strictEqual((svg.match(/class="c /g) || []).length, 90);
+  assert.match(svg, /<polyline class="ema"/);
+  assert.strictEqual(M.chartSvg([], []), '');
+});
+
+test('chart with a flat series does not divide by zero', () => {
+  const flat = Array.from({ length: 5 }, (_, i) => [i, 10, 10, 10, 10]);
+  assert.ok(!M.chartSvg(flat, [10, 10, 10, 10, 10]).includes('NaN'));
+});
+
+test('asset detail shows indicators, Jaime checklist and news', () => {
+  const m = morning();
+  m.assets[0] = { ...m.assets[0], candles: candles(90), ema50: Array(90).fill(150),
+    indicators: { close: 190, ema50: 150, ema200: 120, vs_ema50_pct: 26.67, vs_ema200_pct: 58.33, rsi14: 71.2,
+      stoch_k: 18.5, atr_pct: 2.1, stop_long: 185.2, stop_short: 194.8, vol_ratio: 1.35 },
+    jaime: { long: { count: 3, conditions: [
+      { key: 'tendencia', label: 'Cierre por encima de la EMA50', ok: true },
+      { key: 'estocastico_extremo', label: 'El estocástico tocó la sobreventa (30) en las últimas 6 velas', ok: true },
+      { key: 'giro', label: 'El estocástico gira al alza', ok: false },
+      { key: 'volumen', label: 'Volumen por encima de 1.2× su media', ok: true }] },
+      short: { count: 0, conditions: [] } },
+    news: [{ title: 'Bitcoin <i>ETF</i>', url: 'https://x/2', source: 'CoinDesk', published_at: null, topic: 'crypto', score: 5, day: '2026-10-04' }] };
+  const html = M.assetMorningHtml(m, 'BTC', 'UTC');
+  assert.match(html, /<svg/);
+  assert.match(html, /RSI 14/);
+  assert.match(html, /71,2/);
+  assert.match(html, /ATR/);
+  assert.match(html, /3 de 4 para largo/);
+  assert.match(html, /✅/);
+  assert.match(html, /⬜/);
+  assert.match(html, /Bitcoin &lt;i&gt;ETF/);
+});
+
+test('asset detail without market data says so; radar altcoins have no checklist', () => {
+  const m = morning();
+  assert.match(M.assetMorningHtml(m, 'ZEC', 'UTC'), /sin datos de mercado/i);
+  assert.match(M.assetMorningHtml(m, 'DOGE', 'UTC'), /sin datos de mercado/i);
+  assert.match(M.assetMorningHtml(null, 'BTC', 'UTC'), /sin datos de mercado/i);
+});

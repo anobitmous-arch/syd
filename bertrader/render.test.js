@@ -285,3 +285,21 @@ test('a stale, unknown or malformed manana.json never blanks the panel', () => {
   // Esquema desconocido: no se usa nada de él.
   assert.match(R.render({ data: sample(), error: null, rules: null, morning: cases.schema2, hash: '#/', nowMs: NOW }), /Radar sin datos/);
 });
+
+test('asset page includes the morning block above its history', () => {
+  const m = { schema: 1, kind: 'manana', generated_at: new Date(NOW).toISOString(), tz: 'UTC', radar: null,
+    assets: [{ coin: 'BTC', group: 'carril', name: 'Bitcoin', error: 'sin_datos', candles: [], ema50: [], indicators: null, jaime: null, news: [] }],
+    news: { day: null, top: [] } };
+  const html = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/activo/BTC', nowMs: NOW });
+  assert.ok(html.toLowerCase().indexOf('sin datos de mercado') > -1);
+  assert.ok(html.toLowerCase().indexOf('sin datos de mercado') < html.indexOf('Historial'));
+});
+
+test('a malformed asset entry does not break the asset page or its history', () => {
+  const m = { schema: 1, kind: 'manana', generated_at: new Date(NOW).toISOString(), tz: 'UTC', radar: null,
+    assets: [{ coin: 'BTC', group: 'carril', name: 'Bitcoin', error: null, candles: 'x', ema50: null, indicators: {}, jaime: { long: {} }, news: [null] }],
+    news: { day: null, top: [] } };
+  const html = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/activo/BTC', nowMs: NOW });
+  assert.match(html, /Sin datos de mercado/);
+  assert.match(html, /Historial/);
+});

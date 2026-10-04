@@ -107,9 +107,60 @@
     return `<section><h2>Noticias${old}</h2><ul class="news">${n.top.map((a) => newsItem(a, tz)).join('')}</ul></section>`;
   }
 
-  // Task 6 completa estas dos.
-  function chartSvg() { return ''; }
-  function assetMorningHtml() { return ''; }
+  function chartSvg(candles, ema) {
+    if (!candles || !candles.length) return '';
+    const W = 300, H = 140, pad = 4;
+    const emaVals = (ema || []).filter((v) => v != null);
+    const lo = Math.min(...candles.map((c) => c[3]), ...emaVals);
+    const hi = Math.max(...candles.map((c) => c[2]), ...emaVals);
+    const span = hi - lo || 1;
+    const step = (W - 2 * pad) / candles.length;
+    const y = (v) => (pad + (hi - v) / span * (H - 2 * pad)).toFixed(1);
+    const bodies = candles.map((c, i) => {
+      const x = pad + i * step + step / 2;
+      const top = y(Math.max(c[1], c[4])), bottom = y(Math.min(c[1], c[4]));
+      return `<g class="c ${c[4] >= c[1] ? 'up' : 'down'}"><line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y(c[2])}" y2="${y(c[3])}"/>` +
+        `<rect x="${(x - step * 0.35).toFixed(1)}" y="${top}" width="${(step * 0.7).toFixed(1)}" height="${Math.max(0.5, bottom - top).toFixed(1)}"/></g>`;
+    }).join('');
+    const pts = (ema || []).map((v, i) => (v == null ? null : `${(pad + i * step + step / 2).toFixed(1)},${y(v)}`)).filter(Boolean).join(' ');
+    return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Velas diarias de 90 días con la EMA50">` +
+      `${bodies}${pts ? `<polyline class="ema" points="${pts}"/>` : ''}</svg>`;
+  }
+
+  function indicatorsHtml(i) {
+    const row = (label, value) => `<li><span class="muted">${label}</span> <b>${value}</b></li>`;
+    return '<ul class="indicators">' +
+      row('Precio vs EMA50', `${price(i.ema50)} · <span class="${tone(i.vs_ema50_pct)}">${pct(i.vs_ema50_pct)}</span>`) +
+      row('Precio vs EMA200', i.ema200 == null ? 'sin historial suficiente' : `${price(i.ema200)} · <span class="${tone(i.vs_ema200_pct)}">${pct(i.vs_ema200_pct)}</span>`) +
+      row('RSI 14', num(i.rsi14, 1)) +
+      row('Estocástico 14/3/3', num(i.stoch_k, 1)) +
+      row('ATR 14', `${num(i.atr_pct, 2)} % · stop largo ${price(i.stop_long)} · stop corto ${price(i.stop_short)}`) +
+      row('Volumen / media 20', i.vol_ratio == null ? '—' : `${num(i.vol_ratio, 2)}×`) + '</ul>';
+  }
+
+  function jaimeHtml(j) {
+    const side = (key, label) => {
+      const s = j[key];
+      if (!s || !s.conditions || !s.conditions.length) return '';
+      return `<h4>${s.count} de 4 para ${label}</h4><ul class="checks">` +
+        s.conditions.map((c) => `<li>${c.ok ? '✅' : '⬜'} ${esc(c.label)}</li>`).join('') + '</ul>';
+    };
+    return `<h3>JaimeStratX en diario</h3><p class="muted">Última vela cerrada. Con 4 de 4, el bot propone.</p>${side('long', 'largo')}${side('short', 'corto')}`;
+  }
+
+  function assetMorningHtml(m, coin, tz) {
+    const a = m && (m.assets || []).find((x) => x.coin === coin);
+    if (!a || a.error || !a.candles || !a.candles.length || !a.indicators) {
+      return '<p class="empty">Sin datos de mercado para este activo ahora mismo.</p>';
+    }
+    const news = '<h3>Noticias de los últimos 7 días</h3>' + (a.news && a.news.length
+      ? `<ul class="news">${a.news.map((n) => newsItem(n, tz)).join('')}</ul>`
+      : '<p class="empty">Ninguna noticia lo nombra.</p>');
+    return `<p class="asset-head"><b>${price(a.price)}</b> <span class="${tone(a.change_24h)}">${pct(a.change_24h)} 24 h</span>` +
+      ` · 7 d <span class="${tone(a.change_7d)}">${pct(a.change_7d)}</span></p>` +
+      `${chartSvg(a.candles, a.ema50)}<h3>Indicadores en diario</h3>${indicatorsHtml(a.indicators)}` +
+      `${a.jaime ? jaimeHtml(a.jaime) : ''}${news}`;
+  }
 
   return { isValid, isFresh, radarHtml, marketHtml, newsHtml, newsItem, chartSvg, assetMorningHtml, price, pct, tone, esc };
 });

@@ -216,7 +216,6 @@
       `${classes ? ' · ' + classes : ''}</p></section>`;
   }
 
-  // `morning` lo usa la Task 6 (gráfico, indicadores y noticias del activo).
   function assetHtml(data, coin, morning) {
     const asset = data.panel.assets.find((a) => a.coin === coin);
     const history = data.journal.filter((e) => e.coin === coin);
@@ -226,7 +225,9 @@
     const list = history.length
       ? history.map((e) => entryHtml(e, data.tz)).join('')
       : '<p class="empty">Sin historial todavía.</p>';
-    return `<section><h2>${esc(coin)}</h2>${head}<h3>Historial</h3>${list}</section>`;
+    const valid = M.isValid(morning) ? morning : null;
+    const block = guarded(() => M.assetMorningHtml(valid, coin, data.tz), () => M.assetMorningHtml(null, coin, data.tz));
+    return `<section><h2>${esc(coin)}</h2>${head}${block}<h3>Historial</h3>${list}</section>`;
   }
 
   function diarioHtml(data) {
