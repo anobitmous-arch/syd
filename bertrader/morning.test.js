@@ -78,3 +78,17 @@ test('news links only open http(s) URLs', () => {
   assert.ok(!html.includes('javascript:'));
   assert.match(html, /Fed/);
 });
+
+test('an invalid tz falls back to UTC instead of throwing', () => {
+  const html = M.radarHtml(morning(), 'No/Such_Zone');
+  assert.match(html, /último aviso 2 sept, 10:15/);
+  assert.match(M.newsHtml(morning(), 'No/Such_Zone'), /Reuters · 5 oct, 01:00/);
+});
+
+test('a generated_at in the future is not fresh', () => {
+  assert.ok(M.isFresh(morning({ generated_at: '2026-10-05T02:10:30Z' }), NOW));
+  assert.ok(!M.isFresh(morning({ generated_at: '2026-10-05T02:12:00Z' }), NOW));
+  assert.ok(!M.isFresh(morning({ generated_at: 'nope' }), NOW));
+  assert.ok(M.isValid(morning({ generated_at: '2026-10-05T00:00:00Z' })));
+  assert.ok(!M.isValid(morning({ kind: 'otro' })));
+});

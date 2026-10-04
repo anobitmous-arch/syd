@@ -261,3 +261,27 @@ test('panel order: today, radar, assets, news, trades — and works without mana
   assert.match(without, /Trades/);
   assert.match(without, /datos de mercado sin refrescar/i);
 });
+
+test('a stale, unknown or malformed manana.json never blanks the panel', () => {
+  const fresh = new Date(NOW - 5 * 60000).toISOString();
+  const radar = { price: 85000, change_24h: 1, weekly: {}, structure: {}, levels: [] };
+  const cases = {
+    stale: { schema: 1, kind: 'manana', generated_at: new Date(NOW - 60 * 60000).toISOString(), tz: 'UTC', radar, assets: [], news: { day: null, top: [] } },
+    schema2: { schema: 2, kind: 'manana', generated_at: fresh, radar: { levels: 5 }, assets: [null], news: { top: 'x' } },
+    malformed: { schema: 1, kind: 'manana', generated_at: fresh, radar: { levels: 5 }, assets: [null], news: { top: 'x' } },
+    future: { schema: 1, kind: 'manana', generated_at: new Date(NOW + 10 * 60000).toISOString(), tz: 'UTC', radar, assets: [], news: { day: null, top: [] } },
+  };
+  for (const [name, morning] of Object.entries(cases)) {
+    const html = R.render({ data: sample(), error: null, rules: null, morning, hash: '#/', nowMs: NOW });
+    assert.ok(!/No se han podido pintar/.test(html), name);
+    assert.match(html, /<h2>Hoy<\/h2>/, name);
+    assert.match(html, /<h2>Trades<\/h2>/, name);
+    assert.match(html, /<h2>Activos<\/h2>/, name);
+    assert.match(html, /Radar de BTC/, name);
+    if (name !== 'malformed') assert.match(html, /datos de mercado sin refrescar/i, name);
+  }
+  // Válido pero viejo: el radar se sigue enseñando bajo el aviso.
+  assert.match(R.render({ data: sample(), error: null, rules: null, morning: cases.stale, hash: '#/', nowMs: NOW }), /85\.000/);
+  // Esquema desconocido: no se usa nada de él.
+  assert.match(R.render({ data: sample(), error: null, rules: null, morning: cases.schema2, hash: '#/', nowMs: NOW }), /Radar sin datos/);
+});

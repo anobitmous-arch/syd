@@ -164,18 +164,30 @@
       `<span class="muted">${a.price_at ? esc(when(a.price_at, tz)) : ''}</span>${pill(a.state)}</a>`;
   }
 
+  function guarded(fn, fallback) {
+    try {
+      return fn();
+    } catch (e) {
+      return fallback();
+    }
+  }
+
   // Orden del panel: lo de hoy, radar de BTC, activos, noticias y trades. Sin `manana.json`
   // fresco se avisa arriba del radar y los activos vuelven a las tarjetas del catálogo.
   function panelHtml(data, nowMs, morning) {
     const p = data.panel;
     const tz = data.tz;
+    // De un esquema desconocido no se usa nada; viejo pero válido, el radar se ve bajo el aviso.
+    // Cada sección de mañana va aislada: si su forma es rara, cae a su texto de respaldo.
+    const valid = M.isValid(morning) ? morning : null;
     const fresh = M.isFresh(morning, nowMs);
-    const assets = fresh
-      ? M.marketHtml(morning)
-      : '<section><h2>Activos</h2>' + (p.assets.length
-        ? `<div class="assets">${p.assets.map((a) => assetCard(a, tz)).join('')}</div>` +
-          '<p class="hint">Precio del catálogo: se refresca cada hora.</p>'
-        : '<p class="empty">No hay activos seguidos.</p>') + '</section>';
+    const cards = () => '<section><h2>Activos</h2>' + (p.assets.length
+      ? `<div class="assets">${p.assets.map((a) => assetCard(a, tz)).join('')}</div>` +
+        '<p class="hint">Precio del catálogo: se refresca cada hora.</p>'
+      : '<p class="empty">No hay activos seguidos.</p>') + '</section>';
+    const assets = fresh ? guarded(() => M.marketHtml(morning), cards) : cards();
+    const radar = guarded(() => M.radarHtml(valid, tz), () => M.radarHtml(null, tz));
+    const news = guarded(() => M.newsHtml(valid, tz, data.today), () => '');
     const session = p.session_done
       ? '<p class="session done">Sesión de hoy: hecha</p>'
       : '<p class="session todo">Sesión de hoy: pendiente · apúntala con /sesion en Telegram</p>';
@@ -196,9 +208,7 @@
     return `<section><h2>Hoy</h2>${session}${alerts}` +
       `<h3>Propuestas pendientes</h3>${pending}` +
       `<h3>Posiciones abiertas</h3>${positions}</section>` +
-      stale + M.radarHtml(morning, tz) +
-      assets +
-      M.newsHtml(morning, tz, data.today) +
+      stale + radar + assets + news +
       `<section><h2>Trades</h2>` +
       `<p class="capital">Capital <b>${usd(p.capital.current)}</b> <span class="muted">· suelo ${usd(p.capital.floor)}` +
       ` · resultado cerrado ${money(p.capital.realized)}</span></p>` +

@@ -8,6 +8,7 @@
 
   const SCHEMA = 1;
   const STALE_MS = 45 * 60 * 1000;
+  const FUTURE_MS = 60 * 1000;   // reloj adelantado tolerado; más allá, el dato no es de fiar
   const STATE_ES = { encima: 'por encima de la banda', dentro: 'dentro de la banda', debajo: 'por debajo de la banda' };
 
   function esc(value) {
@@ -32,11 +33,23 @@
     return new Date(day + 'T12:00:00Z').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', '');
   }
   function time(iso, tz) {
-    return iso ? new Date(iso).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz || 'UTC' }) : '';
+    if (!iso) return '';
+    const opts = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+    try {
+      return new Date(iso).toLocaleString('es-ES', { ...opts, timeZone: tz || 'UTC' });
+    } catch (e) {
+      return new Date(iso).toLocaleString('es-ES', { ...opts, timeZone: 'UTC' });
+    }
+  }
+
+  // Válido = esquema y tipo conocidos; fresco = válido y de menos de 45 min (sin venir del futuro).
+  function isValid(m) {
+    return !!m && m.schema === SCHEMA && m.kind === 'manana';
   }
 
   function isFresh(m, nowMs) {
-    return !!m && m.schema === SCHEMA && m.kind === 'manana' && nowMs - Date.parse(m.generated_at) < STALE_MS;
+    const age = isValid(m) ? nowMs - Date.parse(m.generated_at) : NaN;
+    return age < STALE_MS && age > -FUTURE_MS;
   }
 
   function radarHtml(m, tz) {
@@ -98,5 +111,5 @@
   function chartSvg() { return ''; }
   function assetMorningHtml() { return ''; }
 
-  return { isFresh, radarHtml, marketHtml, newsHtml, newsItem, chartSvg, assetMorningHtml, price, pct, tone, esc };
+  return { isValid, isFresh, radarHtml, marketHtml, newsHtml, newsItem, chartSvg, assetMorningHtml, price, pct, tone, esc };
 });
