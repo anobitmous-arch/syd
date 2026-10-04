@@ -67,9 +67,27 @@ test('news titles are escaped and open in a new tab', () => {
   assert.strictEqual(M.newsHtml(morning({ news: { day: null, top: [] } }), 'UTC'), '');
 });
 
-test('old news day is labelled', () => {
+test('news older than yesterday are labelled; yesterday is not', () => {
   const m = morning({ news: { day: '2026-10-03', top: morning().news.top } });
   assert.match(M.newsHtml(m, 'UTC', '2026-10-05'), /del 3 oct/i);
+  const y = morning({ news: { day: '2026-10-04', top: morning().news.top } });
+  assert.ok(!/\(del /.test(M.newsHtml(y, 'UTC', '2026-10-05')));
+});
+
+test('market data age line in radar and asset detail', () => {
+  assert.match(M.radarHtml(morning(), 'UTC', NOW), /Datos de mercado de hace 10 min/);
+  const m = morning();
+  m.assets[0] = { ...m.assets[0], candles: candles(5), ema50: Array(5).fill(1), indicators: { ema50: 1 } };
+  assert.match(M.assetMorningHtml(m, 'BTC', 'UTC', NOW), /Datos de mercado de hace 10 min/);
+});
+
+test('Jaime count is coerced to a number', () => {
+  const m = morning();
+  m.assets[0] = { ...m.assets[0], candles: candles(5), ema50: Array(5).fill(1), indicators: { ema50: 1 },
+    jaime: { long: { count: '<img src=x>', conditions: [{ label: 'a', ok: true }] } } };
+  const html = M.assetMorningHtml(m, 'BTC', 'UTC');
+  assert.ok(!html.includes('<img'));
+  assert.match(html, /0 de 4 para largo/);
 });
 
 test('news links only open http(s) URLs', () => {

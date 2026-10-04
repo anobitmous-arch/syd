@@ -186,7 +186,7 @@
         '<p class="hint">Precio del catálogo: se refresca cada hora.</p>'
       : '<p class="empty">No hay activos seguidos.</p>') + '</section>';
     const assets = fresh ? guarded(() => M.marketHtml(morning), cards) : cards();
-    const radar = guarded(() => M.radarHtml(valid, tz), () => M.radarHtml(null, tz));
+    const radar = guarded(() => M.radarHtml(valid, tz, nowMs), () => M.radarHtml(null, tz));
     const news = guarded(() => M.newsHtml(valid, tz, data.today), () => '');
     const session = p.session_done
       ? '<p class="session done">Sesión de hoy: hecha</p>'
@@ -216,17 +216,19 @@
       `${classes ? ' · ' + classes : ''}</p></section>`;
   }
 
-  function assetHtml(data, coin, morning) {
+  function assetHtml(data, coin, morning, nowMs) {
     const asset = data.panel.assets.find((a) => a.coin === coin);
     const history = data.journal.filter((e) => e.coin === coin);
+    const vigilada = M.isValid(morning) && ((morning.assets || []).find((a) => a && a.coin === coin) || {}).group === 'radar';
     const head = asset
       ? `<p class="asset-head">${pill(asset.state)} <b>${price(asset.price)}</b> <span class="muted">${assetMeta(asset)}</span></p>`
-      : '<p class="empty">Este activo no está entre los seguidos.</p>';
+      : vigilada ? '<p class="empty">Altcoin vigilada (fuera del carril)</p>'
+        : '<p class="empty">Este activo no está entre los seguidos.</p>';
     const list = history.length
       ? history.map((e) => entryHtml(e, data.tz)).join('')
       : '<p class="empty">Sin historial todavía.</p>';
     const valid = M.isValid(morning) ? morning : null;
-    const block = guarded(() => M.assetMorningHtml(valid, coin, data.tz), () => M.assetMorningHtml(null, coin, data.tz));
+    const block = guarded(() => M.assetMorningHtml(valid, coin, data.tz, nowMs), () => M.assetMorningHtml(null, coin, data.tz));
     return `<section><h2>${esc(coin)}</h2>${head}${block}<h3>Historial</h3>${list}</section>`;
   }
 
@@ -333,7 +335,7 @@
     }
     const banner = error ? `<p class="alert">${esc(errorText(error))}</p>` : '';
     const r = route(hash);
-    if (r.view === 'activo') return banner + assetHtml(data, r.coin, morning);
+    if (r.view === 'activo') return banner + assetHtml(data, r.coin, morning, nowMs);
     if (r.view === 'diario') return banner + diarioHtml(data);
     if (r.view === 'conducta') return banner + conductaHtml(data);
     if (r.view === 'reglas') return banner + reglasHtml(rules);

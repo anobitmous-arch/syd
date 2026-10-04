@@ -303,3 +303,14 @@ test('a malformed asset entry does not break the asset page or its history', () 
   assert.match(html, /Sin datos de mercado/);
   assert.match(html, /Historial/);
 });
+
+test('a radar altcoin from manana.json is not called "not followed"', () => {
+  const m = { schema: 1, kind: 'manana', generated_at: new Date(NOW).toISOString(), tz: 'UTC', radar: null,
+    assets: [{ coin: 'ZEC', group: 'radar', name: 'Zcash', error: 'sin_datos', candles: [], ema50: [], indicators: null, jaime: null, news: [] }],
+    news: { day: null, top: [] } };
+  const html = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/activo/ZEC', nowMs: NOW });
+  assert.match(html, /Altcoin vigilada \(fuera del carril\)/);
+  assert.ok(!/no está entre los seguidos/.test(html));
+  const other = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/activo/XYZ', nowMs: NOW });
+  assert.match(other, /no está entre los seguidos/);
+});

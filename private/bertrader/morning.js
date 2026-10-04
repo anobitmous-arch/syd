@@ -52,7 +52,12 @@
     return age < STALE_MS && age > -FUTURE_MS;
   }
 
-  function radarHtml(m, tz) {
+  function ageLine(m, nowMs) {
+    const age = nowMs == null || !m ? NaN : Math.floor((nowMs - Date.parse(m.generated_at)) / 60000);
+    return Number.isFinite(age) ? `<p class="muted">Datos de mercado de hace ${Math.max(0, age)} min</p>` : '';
+  }
+
+  function radarHtml(m, tz, nowMs) {
     const r = m && m.radar;
     if (!r) return '<section><h2>Radar de BTC</h2><p class="empty">Radar sin datos ahora mismo.</p></section>';
     const w = r.weekly || {};
@@ -62,7 +67,7 @@
       `<span class="${tone(l.distance_pct)}">${pct(l.distance_pct)}</span>` +
       (l.last_alert_at ? ` <span class="muted">· último aviso ${esc(time(l.last_alert_at, tz))} a ${price(l.last_alert_px)}</span>` : '') +
       '</li>').join('');
-    return '<section><h2>Radar de BTC</h2>' +
+    return '<section><h2>Radar de BTC</h2>' + ageLine(m, nowMs) +
       `<p class="radar-price"><b>${price(r.price)}</b> <span class="${tone(r.change_24h)}">${pct(r.change_24h)} 24 h</span></p>` +
       `<p>BMSB semanal ${price(w.bmsb_low)}–${price(w.bmsb_high)}: ${esc(STATE_ES[w.state] || 'sin datos')} ` +
       `(<span class="${tone(w.vs_bmsb_pct)}">${pct(w.vs_bmsb_pct)}</span>) · EMA50 semanal ${price(w.ema50)} ` +
@@ -103,7 +108,8 @@
   function newsHtml(m, tz, today) {
     const n = m && m.news;
     if (!n || !n.top || !n.top.length) return '';
-    const old = today && n.day && n.day !== today ? ` <span class="muted">(del ${esc(shortDay(n.day))})</span>` : '';
+    const yesterday = today ? new Date(Date.parse(today + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10) : null;
+    const old = yesterday && n.day && n.day < yesterday ? ` <span class="muted">(del ${esc(shortDay(n.day))})</span>` : '';
     return `<section><h2>Noticias${old}</h2><ul class="news">${n.top.map((a) => newsItem(a, tz)).join('')}</ul></section>`;
   }
 
@@ -142,13 +148,13 @@
     const side = (key, label) => {
       const s = j[key];
       if (!s || !s.conditions || !s.conditions.length) return '';
-      return `<h4>${s.count} de 4 para ${label}</h4><ul class="checks">` +
+      return `<h4>${Number(s.count) || 0} de 4 para ${label}</h4><ul class="checks">` +
         s.conditions.map((c) => `<li>${c.ok ? '✅' : '⬜'} ${esc(c.label)}</li>`).join('') + '</ul>';
     };
     return `<h3>JaimeStratX en diario</h3><p class="muted">Última vela cerrada. Con 4 de 4, el bot propone.</p>${side('long', 'largo')}${side('short', 'corto')}`;
   }
 
-  function assetMorningHtml(m, coin, tz) {
+  function assetMorningHtml(m, coin, tz, nowMs) {
     const a = m && (m.assets || []).find((x) => x.coin === coin);
     if (!a || a.error || !a.candles || !a.candles.length || !a.indicators) {
       return '<p class="empty">Sin datos de mercado para este activo ahora mismo.</p>';
@@ -156,7 +162,7 @@
     const news = '<h3>Noticias de los últimos 7 días</h3>' + (a.news && a.news.length
       ? `<ul class="news">${a.news.map((n) => newsItem(n, tz)).join('')}</ul>`
       : '<p class="empty">Ninguna noticia lo nombra.</p>');
-    return `<p class="asset-head"><b>${price(a.price)}</b> <span class="${tone(a.change_24h)}">${pct(a.change_24h)} 24 h</span>` +
+    return `${ageLine(m, nowMs)}<p class="asset-head"><b>${price(a.price)}</b> <span class="${tone(a.change_24h)}">${pct(a.change_24h)} 24 h</span>` +
       ` · 7 d <span class="${tone(a.change_7d)}">${pct(a.change_7d)}</span></p>` +
       `${chartSvg(a.candles, a.ema50)}<h3>Indicadores en diario</h3>${indicatorsHtml(a.indicators)}` +
       `${a.jaime ? jaimeHtml(a.jaime) : ''}${news}`;
