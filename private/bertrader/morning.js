@@ -1,0 +1,102 @@
+// Bertrader · vista de mañana: manana.json → HTML. Funciones puras, sin DOM (node --test).
+// En el navegador quedan en `window.BTMorning`; render.js las usa.
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.BTMorning = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  const SCHEMA = 1;
+  const STALE_MS = 45 * 60 * 1000;
+  const STATE_ES = { encima: 'por encima de la banda', dentro: 'dentro de la banda', debajo: 'por debajo de la banda' };
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function num(n, digits) {
+    return n == null ? '—' : Number(n).toLocaleString('es-ES', { minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 0 });
+  }
+  function price(n) {
+    if (n == null) return '—';
+    const d = n >= 1000 ? 0 : n >= 1 ? 2 : 4;
+    return num(n, d);
+  }
+  function pct(n) {
+    if (n == null) return '—';
+    const s = Math.abs(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n > 0 ? '+' : n < 0 ? '−' : '') + s + ' %';
+  }
+  function tone(n) { return n == null ? '' : n > 0 ? 'pos' : n < 0 ? 'neg' : ''; }
+  function shortDay(day) {
+    return new Date(day + 'T12:00:00Z').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('.', '');
+  }
+  function time(iso, tz) {
+    return iso ? new Date(iso).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz || 'UTC' }) : '';
+  }
+
+  function isFresh(m, nowMs) {
+    return !!m && m.schema === SCHEMA && m.kind === 'manana' && nowMs - Date.parse(m.generated_at) < STALE_MS;
+  }
+
+  function radarHtml(m, tz) {
+    const r = m && m.radar;
+    if (!r) return '<section><h2>Radar de BTC</h2><p class="empty">Radar sin datos ahora mismo.</p></section>';
+    const w = r.weekly || {};
+    const st = r.structure || {};
+    const pivot = (p, kind) => p ? `Último ${kind} ${p.rising == null ? '' : p.rising ? 'creciente' : 'decreciente'}: <b>${price(p.price)}</b> <span class="muted">(${esc(shortDay(p.date))})</span>` : '';
+    const levels = (r.levels || []).map((l) => `<li><b>${esc(l.label)}</b> ${price(l.price)} · ` +
+      `<span class="${tone(l.distance_pct)}">${pct(l.distance_pct)}</span>` +
+      (l.last_alert_at ? ` <span class="muted">· último aviso ${esc(time(l.last_alert_at, tz))} a ${price(l.last_alert_px)}</span>` : '') +
+      '</li>').join('');
+    return '<section><h2>Radar de BTC</h2>' +
+      `<p class="radar-price"><b>${price(r.price)}</b> <span class="${tone(r.change_24h)}">${pct(r.change_24h)} 24 h</span></p>` +
+      `<p>BMSB semanal ${price(w.bmsb_low)}–${price(w.bmsb_high)}: ${esc(STATE_ES[w.state] || 'sin datos')} ` +
+      `(<span class="${tone(w.vs_bmsb_pct)}">${pct(w.vs_bmsb_pct)}</span>) · EMA50 semanal ${price(w.ema50)} ` +
+      `(<span class="${tone(w.vs_ema50_pct)}">${pct(w.vs_ema50_pct)}</span>)</p>` +
+      `<p class="structure">${[pivot(st.last_high, 'máximo'), pivot(st.last_low, 'mínimo')].filter(Boolean).join('<br>') || 'Estructura semanal sin datos.'}</p>` +
+      `<h3>Niveles de tu plan</h3><ul class="levels-list">${levels}</ul></section>`;
+  }
+
+  function marketRow(a) {
+    const mark = a.near_signal ? ` <span class="pill pill-near">a una condición de ${esc(a.near_signal)}</span>` : '';
+    const body = a.error
+      ? '<span class="muted">sin datos de mercado</span>'
+      : `<span class="asset-price">${price(a.price)}</span><span><span class="${tone(a.change_24h)}">${pct(a.change_24h)}</span>` +
+        ` <span class="muted">· 7 d</span> <span class="${tone(a.change_7d)}">${pct(a.change_7d)}</span></span>`;
+    return `<a class="asset" href="#/activo/${encodeURIComponent(a.coin)}"><span class="asset-coin">${esc(a.coin)}</span>` +
+      `<span class="muted">${esc(a.name)}</span>${body}${mark}</a>`;
+  }
+
+  function marketHtml(m) {
+    const assets = (m && m.assets) || [];
+    const lane = assets.filter((a) => a.group === 'carril');
+    const radar = assets.filter((a) => a.group === 'radar');
+    return '<section><h2>Activos</h2>' +
+      (lane.length ? `<div class="assets">${lane.map(marketRow).join('')}</div>` : '<p class="empty">Sin activos del carril.</p>') +
+      (radar.length ? `<h3>Altcoins vigiladas</h3><div class="assets">${radar.map(marketRow).join('')}</div>` : '') +
+      '</section>';
+  }
+
+  // El enlace viene de un feed ajeno: solo http(s), nunca `javascript:` ni similares.
+  function newsItem(a, tz) {
+    const title = /^https?:\/\//i.test(String(a.url || ''))
+      ? `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>`
+      : esc(a.title);
+    return `<li>${title}` +
+      ` <span class="muted">${esc(a.source)}${a.published_at ? ' · ' + esc(time(a.published_at, tz)) : ''}</span></li>`;
+  }
+
+  function newsHtml(m, tz, today) {
+    const n = m && m.news;
+    if (!n || !n.top || !n.top.length) return '';
+    const old = today && n.day && n.day !== today ? ` <span class="muted">(del ${esc(shortDay(n.day))})</span>` : '';
+    return `<section><h2>Noticias${old}</h2><ul class="news">${n.top.map((a) => newsItem(a, tz)).join('')}</ul></section>`;
+  }
+
+  // Task 6 completa estas dos.
+  function chartSvg() { return ''; }
+  function assetMorningHtml() { return ''; }
+
+  return { isFresh, radarHtml, marketHtml, newsHtml, newsItem, chartSvg, assetMorningHtml, price, pct, tone, esc };
+});

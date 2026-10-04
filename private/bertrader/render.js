@@ -1,9 +1,9 @@
 // Bertrader: datos → HTML. Funciones puras, sin DOM, para poder probarlas con `node --test`.
 // En el navegador quedan en `window.BTRender`.
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.BTRender = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./morning.js'));
+  else root.BTRender = factory(root.BTMorning);
+})(typeof self !== 'undefined' ? self : this, function (M) {
   'use strict';
 
   const SCHEMA = 1;
@@ -164,14 +164,18 @@
       `<span class="muted">${a.price_at ? esc(when(a.price_at, tz)) : ''}</span>${pill(a.state)}</a>`;
   }
 
-  // Las noticias llegan con la vista de mañana: su sección no existe mientras no haya datos.
-  function panelHtml(data, nowMs) {
+  // Orden del panel: lo de hoy, radar de BTC, activos, noticias y trades. Sin `manana.json`
+  // fresco se avisa arriba del radar y los activos vuelven a las tarjetas del catálogo.
+  function panelHtml(data, nowMs, morning) {
     const p = data.panel;
     const tz = data.tz;
-    const assets = p.assets.length
-      ? `<div class="assets">${p.assets.map((a) => assetCard(a, tz)).join('')}</div>` +
-        '<p class="hint">Precio del catálogo: se refresca cada hora.</p>'
-      : '<p class="empty">No hay activos seguidos.</p>';
+    const fresh = M.isFresh(morning, nowMs);
+    const assets = fresh
+      ? M.marketHtml(morning)
+      : '<section><h2>Activos</h2>' + (p.assets.length
+        ? `<div class="assets">${p.assets.map((a) => assetCard(a, tz)).join('')}</div>` +
+          '<p class="hint">Precio del catálogo: se refresca cada hora.</p>'
+        : '<p class="empty">No hay activos seguidos.</p>') + '</section>';
     const session = p.session_done
       ? '<p class="session done">Sesión de hoy: hecha</p>'
       : '<p class="session todo">Sesión de hoy: pendiente · apúntala con /sesion en Telegram</p>';
@@ -188,16 +192,22 @@
       ? p.pending.map((e) => entryHtml(e, tz,
         `<p class="expires">${esc(remaining(e.expires_at, nowMs))} · se decide en Telegram</p>`)).join('')
       : '<p class="empty">Nada que decidir ahora.</p>';
-    return `<section><h2>Activos</h2>${assets}</section>` +
-      `<section><h2>Trades</h2>${session}${alerts}` +
+    const stale = fresh ? '' : '<p class="alert">Datos de mercado sin refrescar.</p>';
+    return `<section><h2>Hoy</h2>${session}${alerts}` +
+      `<h3>Propuestas pendientes</h3>${pending}` +
+      `<h3>Posiciones abiertas</h3>${positions}</section>` +
+      stale + M.radarHtml(morning, tz) +
+      assets +
+      M.newsHtml(morning, tz, data.today) +
+      `<section><h2>Trades</h2>` +
       `<p class="capital">Capital <b>${usd(p.capital.current)}</b> <span class="muted">· suelo ${usd(p.capital.floor)}` +
       ` · resultado cerrado ${money(p.capital.realized)}</span></p>` +
-      `<h3>Posiciones abiertas <span class="muted">${p.positions.length}/${p.limits.max_positions}` +
-      `${classes ? ' · ' + classes : ''}</span></h3>${positions}` +
-      `<h3>Propuestas pendientes</h3>${pending}</section>`;
+      `<p class="counts">Posiciones abiertas <b>${p.positions.length}/${p.limits.max_positions}</b>` +
+      `${classes ? ' · ' + classes : ''}</p></section>`;
   }
 
-  function assetHtml(data, coin) {
+  // `morning` lo usa la Task 6 (gráfico, indicadores y noticias del activo).
+  function assetHtml(data, coin, morning) {
     const asset = data.panel.assets.find((a) => a.coin === coin);
     const history = data.journal.filter((e) => e.coin === coin);
     const head = asset
@@ -305,18 +315,18 @@
     }
   }
 
-  function draw({ data, error, rules, hash, nowMs }) {
+  function draw({ data, error, rules, morning, hash, nowMs }) {
     if (!data) return `<p class="empty">${esc(errorText(error || 'cargando'))}</p>`;
     if (data.schema !== SCHEMA) {
       return '<p class="empty">El fichero trae una versión de datos que esta página no conoce. Recarga la página.</p>';
     }
     const banner = error ? `<p class="alert">${esc(errorText(error))}</p>` : '';
     const r = route(hash);
-    if (r.view === 'activo') return banner + assetHtml(data, r.coin);
+    if (r.view === 'activo') return banner + assetHtml(data, r.coin, morning);
     if (r.view === 'diario') return banner + diarioHtml(data);
     if (r.view === 'conducta') return banner + conductaHtml(data);
     if (r.view === 'reglas') return banner + reglasHtml(rules);
-    return banner + panelHtml(data, nowMs);
+    return banner + panelHtml(data, nowMs, morning);
   }
 
   return { esc, route, freshness, renderStatus, renderNav, render };

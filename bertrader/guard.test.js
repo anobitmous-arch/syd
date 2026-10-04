@@ -10,7 +10,7 @@ const { bertraderRouter, cookieValue } = require('./guard');
 const KEY = 'a'.repeat(64);
 const SECRET = 'c'.repeat(64);
 
-function start(t, { key = KEY, cookieSecret = SECRET, withData = true } = {}) {
+function start(t, { key = KEY, cookieSecret = SECRET, withData = true, files = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bt-guard-'));
   const pageDir = path.join(dir, 'page');
   const dataDir = path.join(dir, 'data');
@@ -22,6 +22,7 @@ function start(t, { key = KEY, cookieSecret = SECRET, withData = true } = {}) {
     fs.writeFileSync(path.join(dataDir, 'data.json'), '{"schema":1}');
     fs.writeFileSync(path.join(dataDir, 'reglas.md'), '# Reglas');
   }
+  for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(dataDir, name), text);
   const app = express();
   app.use(cookieParser());
   app.use('/bertrader', bertraderRouter({ key, cookieSecret, pageDir, dataDir }));
@@ -132,4 +133,13 @@ test('missing data answers 503 instead of a blank page', async (t) => {
   assert.strictEqual(res.status, 503);
   assert.deepStrictEqual(await res.json(), { error: 'sin_datos' });
   assert.strictEqual((await get(base + '/bertrader/reglas.md', session())).status, 503);
+});
+
+test('manana.json is served with the same cookie as data.json', async (t) => {
+  const base = await start(t, { files: { 'manana.json': '{"schema":1,"kind":"manana"}' } });
+  const res = await get(base + '/bertrader/manana.json', session());
+  assert.strictEqual(res.status, 200);
+  assert.match(await res.text(), /"kind":"manana"/);
+  const anon = await get(base + '/bertrader/manana.json');
+  assert.strictEqual(anon.status, 404);
 });

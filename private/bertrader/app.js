@@ -7,6 +7,7 @@
   const nav = document.getElementById('nav');
   let data = null;
   let rules = null;
+  let morning = null;
   let error = null;
 
   async function load() {
@@ -29,21 +30,31 @@
     }
   }
 
+  // Sin `manana.json` (o con un fallo) el panel sigue funcionando con lo de siempre.
+  async function loadMorning() {
+    try {
+      const res = await fetch('/bertrader/manana.json', { cache: 'no-store', credentials: 'same-origin' });
+      morning = res.ok ? await res.json() : null;
+    } catch (e) {
+      morning = null;
+    }
+  }
+
   function paint() {
     const now = Date.now();
     nav.innerHTML = R.renderNav(R.route(location.hash).view);
     status.innerHTML = data ? R.renderStatus(data, now) : '';
-    view.innerHTML = R.render({ data, error, rules, hash: location.hash, nowMs: now });
+    view.innerHTML = R.render({ data, error, rules, morning, hash: location.hash, nowMs: now });
   }
 
   window.addEventListener('hashchange', () => { paint(); window.scrollTo(0, 0); });
   // Al reabrir la pestaña (o el icono de la pantalla de inicio) se piden datos frescos, sin
   // esperar al siguiente intervalo: los temporizadores se congelan con la página en segundo plano.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') load().then(paint);
+    if (document.visibilityState === 'visible') Promise.all([load(), loadMorning()]).then(paint);
   });
-  Promise.all([load(), loadRules()]).then(paint);
+  Promise.all([load(), loadRules(), loadMorning()]).then(paint);
   // El export corre cada 5 minutos; la antigüedad del dato se refresca cada minuto.
-  setInterval(() => load().then(paint), 5 * 60 * 1000);
+  setInterval(() => Promise.all([load(), loadMorning()]).then(paint), 5 * 60 * 1000);
   setInterval(() => { if (data) status.innerHTML = R.renderStatus(data, Date.now()); }, 60 * 1000);
 })();

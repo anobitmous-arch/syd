@@ -40,7 +40,7 @@ function sample(over = {}) {
   };
 }
 
-const view = (data, hash, extra = {}) => R.render({ data, error: null, rules: null, hash, nowMs: NOW, ...extra });
+const view = (data, hash, extra = {}) => R.render({ data, error: null, rules: null, morning: null, hash, nowMs: NOW, ...extra });
 
 test('route parses the fragment', () => {
   assert.deepStrictEqual(R.route(''), { view: 'panel' });
@@ -161,11 +161,11 @@ test('unknown schema is announced instead of drawing half the data', () => {
 });
 
 test('expired cookie message', () => {
-  assert.match(R.render({ data: null, error: 'http_404', rules: null, hash: '', nowMs: NOW }), /Abre de nuevo el enlace con clave/);
-  assert.match(R.render({ data: null, error: 'sin_datos', rules: null, hash: '', nowMs: NOW }), /Todavía no hay datos/);
-  assert.match(R.render({ data: null, error: null, rules: null, hash: '', nowMs: NOW }), /Cargando/);
+  assert.match(R.render({ data: null, error: 'http_404', rules: null, morning: null, hash: '', nowMs: NOW }), /Abre de nuevo el enlace con clave/);
+  assert.match(R.render({ data: null, error: 'sin_datos', rules: null, morning: null, hash: '', nowMs: NOW }), /Todavía no hay datos/);
+  assert.match(R.render({ data: null, error: null, rules: null, morning: null, hash: '', nowMs: NOW }), /Cargando/);
   // Con datos ya cargados, un fallo posterior avisa pero no borra lo que se ve.
-  const html = R.render({ data: sample(), error: 'http_404', rules: null, hash: '#/', nowMs: NOW });
+  const html = R.render({ data: sample(), error: 'http_404', rules: null, morning: null, hash: '#/', nowMs: NOW });
   assert.match(html, /Abre de nuevo el enlace con clave/);
   assert.match(html, /Sin posiciones abiertas/);
 });
@@ -247,4 +247,17 @@ test('lane events have a readable name', () => {
   assert.match(html, /Stop de emergencia/);
   assert.match(html, /Orden ajena/);
   assert.ok(!html.includes('>emergency_stop<'), 'el nombre interno no se enseña');
+});
+
+const M = require('../private/bertrader/morning.js');
+test('panel order: today, radar, assets, news, trades — and works without manana.json', () => {
+  const m = { schema: 1, kind: 'manana', generated_at: new Date(NOW - 5 * 60000).toISOString(), tz: 'UTC',
+    radar: null, assets: [], news: { day: null, top: [] } };
+  const html = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/', nowMs: NOW });
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('Hoy') >= 0, 'la sección Hoy existe');
+  assert.ok(at('Hoy') < at('Radar') && at('Radar') < at('Activos') && at('Activos') < at('Trades'));
+  const without = R.render({ data: sample(), error: null, rules: null, morning: null, hash: '#/', nowMs: NOW });
+  assert.match(without, /Trades/);
+  assert.match(without, /datos de mercado sin refrescar/i);
 });

@@ -65,6 +65,7 @@ function bertraderRouter({ key, cookieSecret, pageDir, dataDir }) {
     res.sendFile(path.join(pageDir, 'index.html'), { cacheControl: false });
   });
   router.get('/data.json', sendData('data.json', 'application/json'));
+  router.get('/manana.json', sendData('manana.json', 'application/json'));
   router.get('/reglas.md', sendData('reglas.md', 'text/plain; charset=utf-8'));
   router.use(express.static(pageDir, { index: false, cacheControl: false }));
   router.use((req, res) => notFound(res));

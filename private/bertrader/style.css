@@ -116,3 +116,13 @@ h4 { font-size: 14px; margin: 14px 0 6px; }
 @media (min-width: 560px) {
   .levels { grid-template-columns: repeat(4, auto); justify-content: start; gap: 2px 18px; }
 }
+
+/* Vista de mañana: radar de BTC, marca de casi-señal y noticias. */
+.pill-near { color: var(--orange); border-color: rgba(255, 159, 67, .45); }
+.radar-price b { font-size: 1.4rem; }
+.structure { margin-top: 6px; }
+.levels-list { padding-left: 1rem; }
+.levels-list li { margin: .2rem 0; font-variant-numeric: tabular-nums; }
+.news { padding-left: 1rem; }
+.news li { margin: .4rem 0; }
+.news a { text-decoration: underline; text-decoration-color: var(--border); }
