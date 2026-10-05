@@ -1,9 +1,9 @@
 // Bertrader: datos → HTML. Funciones puras, sin DOM, para poder probarlas con `node --test`.
 // En el navegador quedan en `window.BTRender`.
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./morning.js'));
-  else root.BTRender = factory(root.BTMorning);
-})(typeof self !== 'undefined' ? self : this, function (M) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./morning.js'), require('./termometro.js'));
+  else root.BTRender = factory(root.BTMorning, root.BTTermo);
+})(typeof self !== 'undefined' ? self : this, function (M, T) {
   'use strict';
 
   const SCHEMA = 1;
@@ -172,9 +172,9 @@
     }
   }
 
-  // Orden del panel: lo de hoy, radar de BTC, activos, noticias y trades. Sin `manana.json`
+  // Orden del panel: lo de hoy, radar de BTC, activos, termómetro, noticias y trades. Sin `manana.json`
   // fresco se avisa arriba del radar y los activos vuelven a las tarjetas del catálogo.
-  function panelHtml(data, nowMs, morning) {
+  function panelHtml(data, nowMs, morning, termometro) {
     const p = data.panel;
     const tz = data.tz;
     // De un esquema desconocido no se usa nada; viejo pero válido, el radar se ve bajo el aviso.
@@ -188,6 +188,7 @@
     const assets = fresh ? guarded(() => M.marketHtml(morning), cards) : cards();
     const radar = guarded(() => M.radarHtml(valid, tz, nowMs), () => M.radarHtml(null, tz));
     const news = guarded(() => M.newsHtml(valid, tz, data.today), () => '');
+    const termo = guarded(() => T.html(termometro, tz, nowMs), () => T.html(null, tz, nowMs));
     const session = p.session_done
       ? '<p class="session done">Sesión de hoy: hecha</p>'
       : '<p class="session todo">Sesión de hoy: pendiente · apúntala con /sesion en Telegram</p>';
@@ -208,7 +209,7 @@
     return `<section><h2>Hoy</h2>${session}${alerts}` +
       `<h3>Propuestas pendientes</h3>${pending}` +
       `<h3>Posiciones abiertas</h3>${positions}</section>` +
-      stale + radar + assets + news +
+      stale + radar + assets + termo + news +
       `<section><h2>Trades</h2>` +
       `<p class="capital">Capital <b>${usd(p.capital.current)}</b> <span class="muted">· suelo ${usd(p.capital.floor)}` +
       ` · resultado cerrado ${money(p.capital.realized)}</span></p>` +
@@ -328,7 +329,7 @@
     }
   }
 
-  function draw({ data, error, rules, morning, hash, nowMs }) {
+  function draw({ data, error, rules, morning, termometro, hash, nowMs }) {
     if (!data) return `<p class="empty">${esc(errorText(error || 'cargando'))}</p>`;
     if (data.schema !== SCHEMA) {
       return '<p class="empty">El fichero trae una versión de datos que esta página no conoce. Recarga la página.</p>';
@@ -339,7 +340,7 @@
     if (r.view === 'diario') return banner + diarioHtml(data);
     if (r.view === 'conducta') return banner + conductaHtml(data);
     if (r.view === 'reglas') return banner + reglasHtml(rules);
-    return banner + panelHtml(data, nowMs, morning);
+    return banner + panelHtml(data, nowMs, morning, termometro);
   }
 
   return { esc, route, freshness, renderStatus, renderNav, render };

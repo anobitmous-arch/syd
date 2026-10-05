@@ -143,3 +143,12 @@ test('manana.json is served with the same cookie as data.json', async (t) => {
   const anon = await get(base + '/bertrader/manana.json');
   assert.strictEqual(anon.status, 404);
 });
+
+test('termometro.json is served with the same cookie as data.json', async (t) => {
+  const base = await start(t, { files: { 'termometro.json': '{"schema":1,"kind":"termometro"}' } });
+  const res = await get(base + '/bertrader/termometro.json', session());
+  assert.strictEqual(res.status, 200);
+  assert.match(await res.text(), /"kind":"termometro"/);
+  const anon = await get(base + '/bertrader/termometro.json');
+  assert.strictEqual(anon.status, 404);
+});

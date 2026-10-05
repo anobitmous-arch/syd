@@ -134,3 +134,11 @@ h4 { font-size: 14px; margin: 14px 0 6px; }
 .chart .ema { fill: none; stroke: var(--blue); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .indicators, .checks { list-style: none; padding: 0; }
 .indicators li, .checks li { padding: 3px 0; }
+.termo-row { border-bottom: 1px solid var(--border); padding: 8px 0; }
+.termo-row summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; list-style: none; }
+.termo-row summary::-webkit-details-marker { display: none; }
+.termo-nums { font-size: 13px; font-variant-numeric: tabular-nums; }
+.termo-tweets { list-style: none; margin: 6px 0 0; padding: 0; font-size: 13px; }
+.termo-tweets li { padding: 4px 0; overflow-wrap: anywhere; }
+.termo-foot { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.termo-foot .stale { color: var(--orange); }

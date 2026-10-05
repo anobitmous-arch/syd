@@ -314,3 +314,17 @@ test('a radar altcoin from manana.json is not called "not followed"', () => {
   const other = R.render({ data: sample(), error: null, rules: null, morning: m, hash: '#/activo/XYZ', nowMs: NOW });
   assert.match(other, /no está entre los seguidos/);
 });
+
+test('termometro block sits between activos and noticias', () => {
+  const termometro = {
+    schema: 1, kind: 'termometro', generated_at: new Date(NOW - 60000).toISOString(),
+    sources: {}, coins: [],
+  };
+  const html = R.render({ data: sample(), error: null, rules: null, morning: null, termometro, hash: '#/', nowMs: NOW });
+  const a = html.indexOf('<h2>Activos</h2>');
+  const t = html.indexOf('🌡️ Termómetro');
+  const tr = html.indexOf('<h2>Trades</h2>');
+  assert.ok(a > -1 && t > a && t < tr);
+  const without = R.render({ data: sample(), error: null, rules: null, morning: null, hash: '#/', nowMs: NOW });
+  assert.match(without, /Termómetro sin datos/);
+});
