@@ -40,6 +40,7 @@ services:
       - SMTP_PASS=SydAdminMail123.+
     volumes:
       - ./data:/app/data:ro
+      - /home/debian/data/hl-recorder/flow:/app/flow:ro
     networks:
       - traefik-proxy
       - bertcrypto_net

@@ -16,7 +16,7 @@ COPY private ./private
 COPY public ./public
 
 # Data folder (mounted in VPS)
-RUN mkdir -p ./data
+RUN mkdir -p ./data ./flow
 
 ENV PORT=5177
 EXPOSE 5177
