@@ -41,6 +41,7 @@ services:
     volumes:
       - ./data:/app/data:ro
       - /home/debian/data/hl-recorder/flow:/app/flow:ro
+      - ./gex:/app/gex
     networks:
       - traefik-proxy
       - bertcrypto_net

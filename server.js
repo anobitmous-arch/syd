@@ -123,6 +123,10 @@ app.get('/fabioModel/flow', (req, res) => {
   res.set('Cache-Control', 'no-store').json([...buckets.values()]);
 });
 
+// Creamer Model: GEX naive del QQQ/SPY (CBOE retrasado) con una foto por sesión en ./gex.
+const { createGex } = require('./creamer/gex');
+app.get('/CreamerModel/gex', createGex(process.env.GEX_DIR || path.join(__dirname, 'gex')));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // SPA fallback para la admin de gastos

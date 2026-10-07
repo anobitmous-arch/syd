@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Creamer Model — BertCrypto</title>
+  <meta name="description" content="El modelo de Chris Creamer (Robbins World Cup): entorno, gamma, localización en descuento y absorción, sobre datos en vivo de Hyperliquid." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #070d12;
+      --panel: #0c1620;
+      --panel-2: #101d29;
+      --text: #e4eff8;
+      --muted: #7a9ab8;
+      --border: #1b2a38;
+      --grid: #0f1b26;
+      --green: #2ee59d;
+      --red: #ff6b6b;
+      --blue: #5baeff;
+      --orange: #ff9f43;
+      --violet: #a78bfa;
+      --yellow: #ffd166;
+      --gray: #8b9bb0;
+      --sess-ny: rgba(91, 174, 255, 0.07);
+      --sess-ldn: rgba(167, 139, 250, 0.08);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5;
+    }
+    .wrap { max-width: 1480px; margin: 0 auto; padding: 14px 16px 48px; }
+
+    header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+    h1 { font-size: 18px; font-weight: 650; letter-spacing: -0.01em; }
+    h1 small { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 8px; }
+    #status { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; }
+    #status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--gray); }
+    #status[data-kind="live"]::before { background: var(--green); box-shadow: 0 0 0 3px rgba(46, 229, 157, 0.18); }
+    #status[data-kind="error"]::before { background: var(--red); }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-bottom: 10px; }
+    .group { display: inline-flex; align-items: center; gap: 6px; }
+    .group > span { color: var(--muted); font-size: 12px; }
+    select, input[type="number"] {
+      background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+      padding: 5px 8px; font: inherit; font-size: 13px;
+    }
+    .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .seg button { background: transparent; color: var(--muted); border: 0; padding: 5px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+    .seg button + button { border-left: 1px solid var(--border); }
+    .seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--text); }
+    .chk { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; }
+
+    .chart-wrap { position: relative; height: clamp(460px, calc(100vh - 210px), 860px);
+      border: 1px solid var(--border); border-radius: 10px; background: var(--panel); overflow: hidden; }
+    #chart { position: absolute; inset: 0; }
+    #vp { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
+    .legend { position: absolute; left: 10px; top: 8px; z-index: 4; pointer-events: none;
+      font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+    .legend b { color: var(--text); font-weight: 600; }
+    .legend .poc b { color: var(--orange); }
+    .legend .va b { color: var(--blue); }
+    .legend .cvd b { color: var(--violet); }
+
+    .keys { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 2px 18px; color: var(--muted); font-size: 12px; }
+    .keys i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+    .keys i.sq { border-radius: 2px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+    .card h2 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .state dt { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .state dd { font-size: 14px; }
+    #st-win { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    #st-win[data-on="1"] { color: var(--green); border-color: rgba(46, 229, 157, 0.4); }
+    #st-flow { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+    th, td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th:first-child, td:first-child { text-align: left; }
+    thead th { color: var(--muted); font-weight: 500; }
+    tbody th { font-weight: 500; }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .scroll { overflow-x: auto; }
+    .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+    details { margin-top: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+    summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; list-style: none; display: flex; justify-content: space-between; }
+    summary::after { content: '+'; color: var(--muted); }
+    details[open] summary::after { content: '−'; }
+    .inner { padding: 0 16px 16px; }
+    #settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px 12px; }
+    legend { color: var(--muted); font-size: 12px; padding: 0 6px; }
+    .f { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; }
+    .f input[type="number"], .f select { width: 110px; }
+    .f-bool { justify-content: flex-start; cursor: pointer; }
+    button.ghost { margin-top: 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+    .prose { max-width: 78ch; color: #c7d6e4; }
+    .prose h3 { font-size: 14px; color: var(--text); margin: 16px 0 6px; }
+    .prose p, .prose li { font-size: 14px; margin-top: 6px; }
+    .prose ul { padding-left: 18px; }
+    .prose strong { color: var(--text); }
+
+    .state dd.small { font-size: 13px; color: #c7d6e4; }
+    table.tbl { margin-top: 8px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; table-layout: fixed; }
+    .tbl thead th:first-child, .tbl tbody th { width: 22%; }
+    .tbl th, .tbl td { text-align: left; white-space: normal; font-family: inherit; font-size: 13px; vertical-align: top; padding: 7px 8px; }
+    .tbl thead th { color: var(--muted); }
+    .tbl tbody th { color: var(--text); font-weight: 600; }
+    .tbl td, .tbl th { overflow-wrap: anywhere; hyphens: auto; }
+    @media (max-width: 640px) { .tbl th, .tbl td { font-size: 12px; padding: 6px 5px; } }
+    .presets { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .presets button { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+    .presets button:hover { border-color: var(--muted); }
+    ol.steps { padding-left: 20px; }
+    ol.steps li { margin-top: 8px; }
+    .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); margin-left: 6px; vertical-align: 1px; }
+
+    @media (max-width: 640px) {
+      .chart-wrap { height: 72vh; }
+      .legend { font-size: 11px; gap: 8px; }
+      #status { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Creamer Model <small>entorno · gamma · descuento · absorción · Hyperliquid en vivo</small></h1>
+      <div id="status" data-kind="cargando"><span id="status-text">Cargando…</span></div>
+    </header>
+
+    <div class="toolbar">
+      <label class="group"><span>Mercado</span><select id="sym" aria-label="Mercado"></select></label>
+      <div class="group"><span>Velas</span><span style="color:var(--text)">5m</span></div>
+      <div class="group"><span>Perfil</span>
+        <div class="seg"><button data-vp="visible">Rango visible</button><button data-vp="day">Día actual</button><button data-vp="ref">Valor de referencia</button></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="bubbles"> Burbujas</label>
+      <label class="chk"><input type="checkbox" id="gexlines"> Niveles GEX</label>
+      <a href="/fabioModel/" style="color:var(--muted);font-size:12px;margin-left:auto">← Fabio Model</a>
+    </div>
+
+    <div class="chart-wrap">
+      <div id="chart"></div>
+      <canvas id="vp"></canvas>
+      <div class="legend">
+        <span><b id="lg-sym">—</b> <b id="lg-px">—</b></span>
+        <span>Valor <b id="lg-ref">—</b></span>
+        <span class="poc">POC <b id="lg-poc">—</b></span>
+        <span class="va">VAH <b id="lg-vah">—</b> · VAL <b id="lg-val">—</b></span>
+        <span class="cvd">CVD día <b id="lg-cvd">—</b></span>
+      </div>
+    </div>
+    <div class="keys">
+      <span><i style="background:var(--orange)"></i>POC del valor de referencia</span>
+      <span><i style="background:var(--blue)"></i>Value Area de referencia (70 %)</span>
+      <span><i style="background:var(--yellow)"></i>Zona fibo 0,705 · 0,788 · 0,886 (gruesa = invalidación)</span>
+      <span><i class="sq" style="background:var(--violet)"></i>Absorción detectada en zona</span>
+      <span><i style="background:var(--green)"></i><i style="background:var(--red)"></i>Burbujas reales (tamaño ∝ USD)</span>
+      <span><i class="sq" style="background:transparent;border:1px dashed var(--green)"></i>Call wall · put wall · flip (GEX)</span>
+      <span><i class="sq" style="background:var(--sess-ny);border:1px solid var(--blue)"></i>Ventana 9:30-11:00 NY</span>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Estado ahora</h2>
+        <span id="st-win" data-on="0">—</span>
+        <dl class="state">
+          <dt>1 · Entorno</dt><dd id="st-env">—</dd>
+          <dt>Gamma (GEX naive)</dt><dd id="st-gex" class="small">—</dd>
+          <dt>2 · Localización</dt><dd id="st-loc">—</dd>
+          <dt>3 · Confirmación</dt><dd id="st-conf">—</dd>
+          <dt>4 · Posición</dt><dd id="st-pos">—</dd>
+        </dl>
+        <p id="st-flow"></p>
+      </section>
+      <section class="card">
+        <h2>Resultados en la historia cargada</h2>
+        <div class="scroll">
+          <table id="stats">
+            <thead><tr><th></th><th>Ops</th><th>Acierto</th><th>Total</th><th>PF</th><th>DD máx</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note" id="stats-note"></p>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <h2>Operaciones (hora NY)</h2>
+      <div class="scroll">
+        <table id="trades">
+          <thead><tr><th>Entrada</th><th>Lado</th><th>Precio</th><th>Stop</th><th>Objetivo</th><th>Salida</th><th>Motivo</th><th>Flujo</th><th>Gamma</th><th>R</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note" id="trades-empty" hidden>Ninguna operación en la historia cargada. Es normal: la versión literal exige estructura a favor, retroceso al 0,705-0,886 fuera del valor, absorción y un segundo intento fallido, todo dentro de 90 minutos. Chris hace 0-2 operaciones al día y muchos días ninguna. Para ver más señales, prueba el preset «Laxo» en Adaptabilidad.</p>
+    </section>
+
+    <details>
+      <summary>Instrucciones · cómo opera Chris (y cómo usar esta página)</summary>
+      <div class="inner prose">
+        <p>Cuatro pasos en orden: <strong>entorno → localización → confirmación → gestión</strong>. La entrada es solo el último 5-10 %: sirve para confirmar o negar una idea que ya está construida. Los pasos 1 y 2 se hacen <strong>antes de la apertura</strong>, nunca con el precio corriendo.</p>
+        <h3>Antes de la apertura</h3>
+        <ol class="steps">
+          <li><strong>Estructura.</strong> En 1h/4h: ¿el valor se está creando más arriba (máximos y mínimos crecientes), más abajo o de lado? Qué hizo la semana y la anterior. Aquí: POC y Value Area de los días previos; con valor al alza solo se buscan largos, con valor a la baja solo cortos.</li>
+          <li><strong>Gamma (GEX).</strong> No es dirección: verde no es largo ni rojo es corto. <em>Gamma positiva</em>: los dealers venden subidas y compran bajadas, se amortigua la volatilidad, muchas rupturas fallan. <em>Gamma negativa</em>: compran subidas y venden bajadas, se amplifica, movimientos más rápidos. Apunta el call wall, el put wall y el flip.</li>
+          <li><strong>Dónde hacer negocio.</strong> Con valor al alza nunca se compra en premium: se espera a que el precio vuelva a <strong>descuento</strong>, por debajo de la Value Area. Fibo del swing bajo al swing alto: zona <strong>0,705 · 0,788 · 0,886</strong>. Tiene que quedar <strong>fuera</strong> del valor y el retroceso tiene que haber hecho un swing interno antes de llegar.</li>
+          <li><strong>Escenarios escritos</strong> antes de tocar nada.</li>
+        </ol>
+        <h3>En la sesión (primeros 90 minutos de NY)</h3>
+        <ol class="steps" start="5">
+          <li><strong>Absorción.</strong> En la zona, vela de 5m con la mecha inferior llena de delta negativo: vendedores agresivos que no consiguen bajar el precio. La vela cierra al alza. La absorción sola no es giro; ocurre constantemente.</li>
+          <li><strong>Segundo intento.</strong> La vela siguiente abre, retrocede, los vendedores lo vuelven a intentar y <strong>fallan más arriba</strong>. Cuando gira al alza (el ask se ilumina con desequilibrios ≥ 400 %), entra largo.</li>
+          <li><strong>Stop</strong> al otro lado de los vendedores que fallaron. La idea queda invalidada si consiguen pasar donde antes no pudieron.</li>
+          <li><strong>Primer control: volver al valor.</strong> Los compradores tienen que meter el precio dentro de la Value Area. Si hacen esfuerzo y no hay resultado, break-even o fuera.</li>
+          <li><strong>Objetivo</strong>: swing alto (las órdenes se agrupan en swings y niveles psicológicos) o el POC. Trail detrás de cada empuje que da resultado; al acercarse al POC o al call wall, se aprieta. Suele acabar en 1,5-2 R.</li>
+          <li><strong>No se opera</strong> si el retroceso cierra por debajo del 0,886, si la participación cae (su umbral: 20.000 contratos de MNQ por vela de 5m), si hay noticias justo antes o si ya pasó la hora y media.</li>
+        </ol>
+        <h3>Disciplina (donde está la consistencia)</h3>
+        <ul>
+          <li>0-2 operaciones al día. <strong>Para tras 2 pérdidas seguidas</strong> (con 3 sabe que hay un 50 % de que empiece a decidir mal). Apagado duro a la hora y media.</li>
+          <li><strong>Pérdida buena</strong>: setup ejecutado bien que sale mal (varianza). <strong>Pérdida mala</strong>: anticipar sin confirmación, perseguir, entrar pronto, saltarse reglas. Si comete un error así, apaga.</li>
+          <li>Sesiones A/B/C por ejecución, no por P&amp;L. La consistencia se gana eliminando las sesiones C (optimización del back-end), no buscando más setups A+.</li>
+          <li>Una regla tiene acción concreta y es tuya: «no sobreoperar» no es una regla; «2 pérdidas seguidas → cierro» sí.</li>
+          <li>Para aprender: un mes con un tamaño casi insultante, centrado solo en ejecutar bien.</li>
+        </ul>
+        <h3>Cómo usar esta página</h3>
+        <ul>
+          <li>Ábrela antes de las <strong>9:30 NY</strong> (ahora las 23:30 en Gold Coast; desde el 1 de noviembre, las 00:30). El panel «Estado ahora» te da entorno, gamma y el valor de referencia provisional.</li>
+          <li>En la ventana, la zona amarilla aparece solo si el entorno permite ese lado y la zona está fuera del valor. Los cuadrados violetas son las absorciones; la flecha amarilla, la entrada.</li>
+          <li>La página no envía órdenes: es un copiloto y un registro. La decisión final es tuya, como en el original.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Adaptabilidad · qué cambia respecto al original</summary>
+      <div class="inner prose">
+        <p>Chris opera MNQ con footprint en ATAS/Deep Charts y GEX de Tanuki Trade. Aquí todo sale de Hyperliquid y de fuentes gratis. Lo que no se puede replicar se aproxima, y se dice dónde.</p>
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Pieza</th><th>Original</th><th>Aquí</th></tr></thead>
+            <tbody>
+              <tr><th>Mercado</th><td>MNQ (micro Nasdaq), a veces Asia</td><td>XYZ100 (perp Nasdaq 100) por defecto, SP500, BTC, ETH, SOL, HYPE. Asia opcional (20:00-23:00 NY).</td></tr>
+              <tr><th>Estructura</th><td>1h/4h, máximos y mínimos crecientes, valor migrando</td><td>POC y VAL (o VAH) de los últimos N días subiendo (o bajando). Por defecto N = 2.</td></tr>
+              <tr><th>Gamma</th><td>GEX naive de QQQ/NDX en Tanuki</td><td>GEX naive del <strong>QQQ</strong> (XYZ100) y del <strong>SPY</strong> (SP500), calculado en nuestro servidor con la cadena retrasada de CBOE cada 15 min y llevado al perp por ratio de precios. Flip = precio donde el GEX total recalculado con Black-Scholes cambia de signo. Se guarda una foto por sesión: el backtest solo tiene régimen desde el 7-oct-2026. Cripto: régimen manual.</td></tr>
+              <tr><th>Valor</th><td>Value Area de la subasta reciente</td><td>Londres (3:00-9:30 NY) por defecto; overnight completo o día previo como alternativa.</td></tr>
+              <tr><th>Swing</th><td>Swing bajo → swing alto, a ojo</td><td>Mínimo y máximo de las últimas 72 velas de 5m (6 h), tramo ≥ 4 ATR.</td></tr>
+              <tr><th>Absorción</th><td>Velas footprint bid×ask + perfil de delta dentro de la vela</td><td>Delta de los minutos que tocan el tercio inferior (o superior) de la vela de 5m, con velas de 1m y order flow real grabado. Antes de la grabación, el delta del minuto se estima por su forma; sin velas de 1m (más de 3,5 días atrás) se usa solo la mecha.</td></tr>
+              <tr><th>Giro</th><td>Desequilibrios ≥ 400 % en el ask</td><td>No hay footprint por nivel: vela de giro con delta a favor, cierre en la mitad alta y, si quieres, burbuja real (orden agresiva grande) a favor.</td></tr>
+              <tr><th>Participación</th><td>≥ 20.000 contratos MNQ por vela de 5m</td><td>Volumen ≥ 0,5 × mediana de las velas de la ventana de los últimos 5 días.</td></tr>
+              <tr><th>Noticias, libro</th><td>Lo mira él</td><td>No se filtra: mira el calendario a mano.</td></tr>
+              <tr><th>Costes</th><td>Comisiones de futuros</td><td>4,5 pb por lado; se descartan stops tan cortos que la comisión supera 0,5 R.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Dos perfiles</h3>
+        <p><strong>Literal</strong> (por defecto): todo lo que dice Chris, a rajatabla. <strong>Laxo</strong>: misma lógica, pero basta 1 día de valor migrando, también opera en valor lateral, la zona puede tocar el valor, la vela de absorción puede cerrar en contra (si cierra en su mitad alta) y no exige swing interno.</p>
+        <div class="presets">
+          <button id="preset-strict">Literal</button>
+          <button id="preset-lax">Laxo</button>
+        </div>
+        <h3>Qué esperar</h3>
+        <p id="calib">Lo probé fuera de la página con 120 días de BTC y ETH en Binance, que sí dan volumen agresor por minuto (delta real en todas las velas). La versión literal hizo <strong>0 operaciones</strong> en 4 meses; la laxa, 1 en BTC y 2 en ETH. Con eso no se puede validar nada: es un filtro de setups A+, no una máquina de señales. El 60-65 % de acierto de Chris viene de su lectura discrecional del footprint y de los casos raros, que no se automatizan. Úsala como checklist en vivo: te dice en qué paso está el mercado y qué falta.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Ajustes de la estrategia</summary>
+      <div class="inner">
+        <div id="settings-grid"></div>
+        <button class="ghost" id="reset">Volver a los valores por defecto</button>
+      </div>
+    </details>
+
+    <details>
+      <summary>Comparación con Fabio Model</summary>
+      <div class="inner prose">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th></th><th>Fabio Valentini</th><th>Chris Creamer</th></tr></thead>
+            <tbody>
+              <tr><th>Marco</th><td>AMT, tres filtros: estado → localización → agresión</td><td>AMT, cuatro: entorno (+ gamma) → localización → confirmación → gestión</td></tr>
+              <tr><th>Estado</th><td>Balance o desequilibrio frente a la Value Area del día previo</td><td>Estructura de valor de varios días + régimen de volatilidad por gamma</td></tr>
+              <tr><th>Modelos</th><td>Dos: tendencia en NY (sale de balance) y reversión al POC en Londres</td><td>Uno: retroceso a favor de la estructura, nunca contra ella</td></tr>
+              <tr><th>Localización</th><td>Nodo de bajo volumen tras la ruptura; retest de VAH/VAL</td><td>Fibo 0,705-0,886 fuera del valor (descuento/premium), con estructura interna</td></tr>
+              <tr><th>Gatillo</th><td>Agresión que <strong>sí</strong> mueve precio: burbujas grandes a favor (iniciativa)</td><td>Agresión contraria que <strong>no</strong> mueve precio (absorción), segundo intento fallido y giro: entra con los atrapados en contra</td></tr>
+              <tr><th>Stop</th><td>Detrás de la vela de agresión</td><td>Detrás de los vendedores (o compradores) que fallaron</td></tr>
+              <tr><th>Objetivo</th><td>POC o máximo/mínimo previo; busca R altos</td><td>Swing o POC, trail; 1,5-2 R con 60-65 % de acierto</td></tr>
+              <tr><th>Horario</th><td>NY (M1) y Londres (M2)</td><td>90 minutos de NY, a veces Asia; apagado duro</td></tr>
+              <tr><th>Filtros extra</th><td>—</td><td>Participación mínima, invalidación en 0,886, 2 pérdidas seguidas</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Lo que comparten</h3>
+        <ul>
+          <li>El mercado como subasta; la Value Area y el POC como mapa. El order flow es la última confirmación, no el setup.</li>
+          <li>Nasdaq en la apertura de NY, timeframes cortos y mucha selectividad: no operar es una decisión.</li>
+        </ul>
+        <h3>La diferencia de fondo</h3>
+        <p>Fabio compra la <strong>iniciativa</strong>: cuando alguien grande empuja a favor en el sitio correcto. Chris compra el <strong>fracaso</strong>: cuando el lado contrario empuja en su zona y no consigue nada, y los que entraron mal tendrán que salir. El Modelo 2 de Fabio (excursión fallida que vuelve al valor) es el que más se le parece, pero Fabio lo usa en balance hacia el POC y Chris exige estructura direccional y descuento. Juntas, las dos páginas cubren los dos lados de la misma lectura de agresión.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Qué es real y qué es aproximado</summary>
+      <div class="inner prose">
+        <ul>
+          <li><strong>Burbujas y delta:</strong> reales donde hay grabación de <code>hl_recorder</code> (desde el 5-oct-2026) o directo; antes, estimados por la forma de la vela. La tabla marca cada operación como «real» o «estimado».</li>
+          <li><strong>Delta dentro de la vela:</strong> con resolución de 1 minuto, no por nivel de precio. Una vela de 5m tiene 5 trozos: distingue «el delta negativo está en la mecha de abajo» del resto, pero no es un footprint.</li>
+          <li><strong>Velas de 1m:</strong> Hyperliquid solo da las últimas 5000 (~3,5 días). Las de 5m, 17 días.</li>
+          <li><strong>GEX:</strong> naive (asume que los dealers tienen las calls vendidas y las puts compradas), con OI del cierre anterior y precios retrasados 15 min. Igual que el que usa Chris: sirve para el régimen, no para rebotar en muros exactos.</li>
+          <li>Resultados en R con comisiones. Entrada a la apertura de la vela siguiente; si en una vela tocan stop y objetivo, cuenta el stop.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
