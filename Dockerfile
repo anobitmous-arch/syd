@@ -17,7 +17,7 @@ COPY private ./private
 COPY public ./public
 
 # Data folder (mounted in VPS)
-RUN mkdir -p ./data ./flow ./gex
+RUN mkdir -p ./data ./flow ./gex ./journal
 
 ENV PORT=5177
 EXPOSE 5177

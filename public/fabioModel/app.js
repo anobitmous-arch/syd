@@ -5,6 +5,7 @@ import {
 import {
   annotate, simulate, buildProfile, dayProfiles, autoBinSize, tickSize, estimateDelta, nyParts, DEFAULTS, stats,
 } from './engine.js';
+import { resolveExit, liveExit, rAt, summary } from './journal.js';
 
 const HL_INFO = 'https://api.hyperliquid.xyz/info';
 const HL_WS = 'wss://api.hyperliquid.xyz/ws';
@@ -83,6 +84,9 @@ const S = {
   vpMode: store.get('fm.vp', 'visible'),
   showProxy: store.get('fm.proxy', true),
   loadId: 0,
+  journal: [], // operaciones del diario en papel (servidor, detrás de la cookie de /bertrader)
+  jrSide: 'L',
+  lastPx: null,
 };
 const bubbleUsd = () => Math.max(S.cfg.bubbleUsd ?? S.sym.bubble, S.sym.rec);
 const bubbles = () => S.histOrders.concat(S.liveOrders.filter((g) => g.usd >= bubbleUsd()));
@@ -198,6 +202,7 @@ async function load() {
   setStatus('cargando', 'Cargando velas…');
   closeWs();
   S.histReal.clear(); S.liveReal.clear(); S.histMins.clear(); S.histOrders = []; S.liveOrders = [];
+  S.lastPx = null;
   try {
     const [bars, bars5] = await Promise.all([
       fetchCandles(S.sym.coin, S.tf),
@@ -280,6 +285,8 @@ function onTrades(list) {
     groups.set(key, g);
   }
   for (const g of groups.values()) if (g.usd >= S.sym.rec) S.liveOrders.push(g);
+  const lastT = list.filter((t) => t.coin === S.sym.coin).at(-1);
+  if (lastT) { S.lastPx = +lastT.px; checkLiveExits(S.lastPx, Math.floor(lastT.time / 1000)); }
   schedule(false);
 }
 
@@ -322,6 +329,8 @@ function recompute(full) {
   setMarkers(res);
   setPositionLines(res.pos);
   renderPanels(res);
+  setJournalLines();
+  renderJournalCalc();
   vpDirty = true;
 }
 
@@ -346,6 +355,7 @@ function setMarkers(res) {
     const long = res.pos.side === 'L';
     ms.push({ time: res.pos.entryT, position: long ? 'belowBar' : 'aboveBar', shape: long ? 'arrowUp' : 'arrowDown', color: css('--yellow'), text: `M${res.pos.model} ${long ? 'L' : 'S'} (abierta)` });
   }
+  ms.push(...journalMarkers());
   ms.sort((a, b) => a.time - b.time);
   markers.setMarkers(ms);
 }
@@ -490,6 +500,253 @@ function renderPanels(res) {
   }).join('');
 }
 
+// ───────── Diario en papel (sesiones en vivo)
+const JR_API = '/bertrader/journal';
+const BNE_FMT = new Intl.DateTimeFormat('es-ES', { timeZone: 'Australia/Brisbane', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+const fmtBne = (t) => BNE_FMT.format(new Date(t * 1000));
+const symLabel = (coin) => SYMBOLS.find((x) => x.coin === coin)?.label.split(' · ').at(-1) || coin;
+const esc = (x) => String(x ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const nowPx = () => S.lastPx ?? S.bars.at(-1)?.c ?? null;
+let jrLines = [];
+const closing = new Set();
+
+async function jrFetch(path, method = 'GET', body) {
+  const res = await fetch(JR_API + path, {
+    method, credentials: 'same-origin',
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 404 && !path) throw Object.assign(new Error('sin acceso'), { locked: true });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `error ${res.status}`);
+  return res.status === 204 ? null : res.json();
+}
+
+function jrMsg(kind, text) {
+  const el = $('#jr-msg');
+  el.dataset.kind = kind; el.textContent = text;
+}
+
+function readForm() {
+  const stop = Number($('#jr-stop').value), tp = Number($('#jr-tp').value), entry = nowPx();
+  return { stop, tp, entry, side: S.jrSide };
+}
+
+function renderJournalCalc() {
+  const { stop, tp, entry, side } = readForm();
+  const btn = $('#jr-enter');
+  if (!entry || !stop || !tp) { $('#jr-calc').textContent = entry ? `Precio ahora ${fmtPx(entry)}` : '—'; return; }
+  const long = side === 'L';
+  const ok = long ? stop < entry && tp > entry : stop > entry && tp < entry;
+  const risk = Math.abs(entry - stop);
+  const rr = Math.abs(tp - entry) / risk;
+  const cost = (2 * 4.5 / 1e4) * entry / risk;
+  $('#jr-calc').textContent = ok
+    ? `Entrada ≈ ${fmtPx(entry)} · riesgo ${fmtPx(risk)} pts · R:R ${rr.toFixed(2)} · comisión ${cost.toFixed(2)} R · tamaño ${(10 / risk).toPrecision(3)} uds (10 $)${cost > 0.5 ? ' · ⚠️ comisión > 0,5 R: el motor no la tomaría' : ''}`
+    : `Precio ahora ${fmtPx(entry)}: ${long ? 'en largo el stop va debajo y el objetivo encima' : 'en corto el stop va encima y el objetivo debajo'}`;
+  btn.disabled = !ok;
+}
+
+function buildJournal() {
+  for (const b of document.querySelectorAll('#jr-side button')) {
+    b.onclick = () => {
+      S.jrSide = b.dataset.side;
+      document.querySelectorAll('#jr-side button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      renderJournalCalc();
+    };
+  }
+  $('#jr-stop-bar').onclick = () => {
+    const b = S.bars.at(-2);
+    if (!b) return;
+    const buf = S.cfg.stopTicks * S.tick;
+    $('#jr-stop').value = String(S.jrSide === 'L' ? +(b.l - buf).toFixed(6) : +(b.h + buf).toFixed(6));
+    renderJournalCalc();
+  };
+  for (const b of document.querySelectorAll('#jr-tp-chips button')) {
+    b.onclick = () => {
+      const v = S.result?.prev?.[b.dataset.lvl];
+      if (v == null) return jrMsg('error', 'Aún no hay perfil del día previo.');
+      $('#jr-tp').value = String(+v.toFixed(6));
+      renderJournalCalc();
+    };
+  }
+  $('#jr-stop').oninput = renderJournalCalc;
+  $('#jr-tp').oninput = renderJournalCalc;
+  $('#jr-enter').onclick = enterPaper;
+  loadJournal();
+  setInterval(syncOpen, 60000);
+}
+
+async function loadJournal() {
+  try {
+    S.journal = await jrFetch('');
+  } catch (e) {
+    if (e.locked) { $('#jr-locked').hidden = false; $('#jr-body').hidden = true; return; }
+    jrMsg('error', `No se pudo leer el diario: ${e.message}`);
+    return;
+  }
+  renderJournal();
+  syncOpen();
+}
+
+async function enterPaper() {
+  const { stop, tp, entry, side } = readForm();
+  const body = {
+    coin: S.sym.coin, model: $('#jr-model').value, side, entry, stop, tp, entryT: Math.floor(Date.now() / 1000),
+    estado: $('#jr-estado').value, localizacion: $('#jr-loc').value, agresion: $('#jr-agr').value,
+  };
+  if (!body.estado.trim() || !body.localizacion.trim() || !body.agresion.trim()) {
+    return jrMsg('error', 'Falta el motivo: estado, localización y agresión. Si no lo puedes escribir, no es un setup.');
+  }
+  if (S.journal.filter((t) => !t.exitT).length) return jrMsg('error', 'Ya hay una operación abierta: una cada vez.');
+  $('#jr-enter').disabled = true;
+  try {
+    const t = await jrFetch('', 'POST', body);
+    S.journal.push(t);
+    for (const id of ['#jr-estado', '#jr-loc', '#jr-agr', '#jr-stop', '#jr-tp']) $(id).value = '';
+    jrMsg('ok', `Dentro en papel a ${fmtPx(t.entry)}.`);
+    renderJournal();
+    recompute(false);
+  } catch (e) {
+    jrMsg('error', `No se guardó: ${e.message}`);
+  } finally {
+    renderJournalCalc();
+  }
+}
+
+async function closePaper(t, exit) {
+  if (closing.has(t.id)) return;
+  closing.add(t.id);
+  try {
+    const upd = await jrFetch(`/${t.id}`, 'PATCH', exit);
+    Object.assign(t, upd);
+    jrMsg(upd.r > 0 ? 'ok' : 'error', `Cerrada ${exit.exitReason} a ${fmtPx(upd.exitPx)}: ${upd.r > 0 ? '+' : ''}${upd.r.toFixed(2)} R. Apunta si seguiste el modelo.`);
+    renderJournal();
+    recompute(false);
+  } catch (e) {
+    jrMsg('error', `No se pudo cerrar: ${e.message}`);
+  } finally {
+    closing.delete(t.id);
+  }
+}
+
+function checkLiveExits(px, at) {
+  for (const t of S.journal) {
+    if (t.exitT || t.coin !== S.sym.coin || at <= t.entryT) continue;
+    const exit = liveExit(t, px, at);
+    if (exit) closePaper(t, exit);
+  }
+  updateOpenR();
+}
+
+// Solo el número: rehacer la fila en cada trade se comería los clics en sus botones.
+function updateOpenR() {
+  for (const el of document.querySelectorAll('#jr-open .jr-r')) {
+    const t = S.journal.find((x) => x.id === el.dataset.id);
+    const px = t && t.coin === S.sym.coin ? nowPx() : null;
+    if (!px) continue;
+    const r = rAt(t, px);
+    el.className = `jr-r ${r > 0 ? 'pos' : r < 0 ? 'neg' : ''}`;
+    el.textContent = `${r > 0 ? '+' : ''}${r.toFixed(2)} R`;
+  }
+}
+
+// Operaciones abiertas mientras la página estaba cerrada (o en otro mercado): velas de 1m.
+async function syncOpen() {
+  for (const t of S.journal.filter((x) => !x.exitT)) {
+    try {
+      const res = await fetch(HL_INFO, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'candleSnapshot', req: { coin: t.coin, interval: '1m', startTime: t.entryT * 1000, endTime: Date.now() } }),
+      });
+      if (!res.ok) continue;
+      const bars = (await res.json()).map((k) => ({ t: k.t / 1000, o: +k.o, h: +k.h, l: +k.l, c: +k.c }));
+      // Solo velas ya cerradas: la última sigue formándose.
+      const exit = resolveExit(t, bars.filter((b) => b.t + 60 <= Date.now() / 1000));
+      if (exit) await closePaper(t, exit);
+    } catch { /* se reintenta en el siguiente minuto */ }
+  }
+}
+
+function renderOpen() {
+  const open = S.journal.filter((t) => !t.exitT);
+  $('#jr-open').innerHTML = open.map((t) => {
+    const px = t.coin === S.sym.coin ? nowPx() : null;
+    const r = px ? rAt(t, px) : null;
+    return `<div class="row" data-id="${t.id}"><b>ABIERTA</b><span>${symLabel(t.coin)} · ${t.model} · ${t.side === 'L' ? 'Largo' : 'Corto'}</span>`
+      + `<span>entrada ${fmtPx(t.entry)} · stop ${fmtPx(t.stop)} · objetivo ${fmtPx(t.tp)}</span>`
+      + `<span class="jr-r ${r > 0 ? 'pos' : r < 0 ? 'neg' : ''}" data-id="${t.id}">${r == null ? 'cambia al mercado para verla en vivo' : `${r > 0 ? '+' : ''}${r.toFixed(2)} R`}</span>`
+      + `<button class="jr-btn" data-act="close">Cerrar ahora</button><button class="jr-btn" data-act="del">Borrar (error)</button></div>`;
+  }).join('');
+  for (const row of document.querySelectorAll('#jr-open .row')) {
+    const t = S.journal.find((x) => x.id === row.dataset.id);
+    row.querySelector('[data-act="close"]').onclick = () => {
+      const px = t.coin === S.sym.coin ? nowPx() : null;
+      if (!px) return jrMsg('error', `Cambia el mercado a ${symLabel(t.coin)} para cerrarla a precio actual.`);
+      closePaper(t, { exitPx: px, exitT: Math.floor(Date.now() / 1000), exitReason: 'manual' });
+    };
+    row.querySelector('[data-act="del"]').onclick = async () => {
+      if (!confirm('¿Borrar esta entrada? Solo para entradas metidas por error.')) return;
+      try { await jrFetch(`/${t.id}`, 'DELETE'); S.journal = S.journal.filter((x) => x !== t); renderJournal(); recompute(false); } catch (e) { jrMsg('error', e.message); }
+    };
+  }
+}
+
+function renderJournal() {
+  renderOpen();
+  const s = summary(S.journal);
+  $('#jr-sum').textContent = s.n
+    ? `${s.n} cerradas · ${s.total > 0 ? '+' : ''}${s.total.toFixed(2)} R (${(s.total * 10).toFixed(0)} $ de papel) · media ${s.avg.toFixed(2)} R · acierto ${Math.round(s.win * 100)} %`
+      + ` · seguí el modelo ${s.followed == null ? '—' : `${Math.round(s.followed * 100)} %`} (${s.reviewed} revisadas)`
+    : 'Sin operaciones cerradas todavía.';
+  const closed = S.journal.filter((t) => t.exitT).slice().reverse();
+  $('#jr-closed').hidden = !closed.length;
+  $('#jr-closed tbody').innerHTML = closed.map((t) => {
+    const f = fmtNY(t.entryT);
+    const sel = (v) => (t.followed === v ? 'selected' : '');
+    return `<tr data-id="${t.id}"><td>${f.date} ${f.hm} · ${fmtBne(t.entryT)}</td><td>${symLabel(t.coin)}</td><td>${t.model}</td><td>${t.side === 'L' ? 'Largo' : 'Corto'}</td>`
+      + `<td>${fmtPx(t.entry)}</td><td>${fmtPx(t.stop)}</td><td>${fmtPx(t.tp)}</td><td>${fmtPx(t.exitPx)} ${t.exitReason}</td>`
+      + `<td class="${t.r > 0 ? 'pos' : 'neg'}">${t.r > 0 ? '+' : ''}${t.r.toFixed(2)}</td>`
+      + `<td><select data-f="followed"><option value="" ${sel(null)}>—</option><option value="1" ${sel(true)}>Sí</option><option value="0" ${sel(false)}>No</option></select></td>`
+      + `<td><input type="text" data-f="note" value="${esc(t.note)}" placeholder="qué repetiría / qué no"></td>`
+      + `<td class="motivo"><b>E</b> ${esc(t.estado)}<br><b>L</b> ${esc(t.localizacion)}<br><b>A</b> ${esc(t.agresion)}</td></tr>`;
+  }).join('');
+  for (const tr of document.querySelectorAll('#jr-closed tbody tr')) {
+    const t = S.journal.find((x) => x.id === tr.dataset.id);
+    tr.querySelector('[data-f="followed"]').onchange = async (e) => {
+      const v = e.target.value === '' ? null : e.target.value === '1';
+      try { Object.assign(t, await jrFetch(`/${t.id}`, 'PATCH', { followed: v })); renderJournal(); } catch (err) { jrMsg('error', err.message); }
+    };
+    tr.querySelector('[data-f="note"]').onchange = async (e) => {
+      try { Object.assign(t, await jrFetch(`/${t.id}`, 'PATCH', { note: e.target.value })); } catch (err) { jrMsg('error', err.message); }
+    };
+  }
+}
+
+function journalMarkers() {
+  const ms = [];
+  if (!S.bars.length) return ms;
+  const step = TFS[S.tf], minT = S.bars[0].t, maxT = S.bars.at(-1).t;
+  const snap = (t) => Math.floor(t / step) * step;
+  for (const t of S.journal) {
+    if (t.coin !== S.sym.coin || t.entryT < minT) continue;
+    const long = t.side === 'L';
+    ms.push({ time: Math.min(snap(t.entryT), maxT), position: long ? 'belowBar' : 'aboveBar', shape: long ? 'arrowUp' : 'arrowDown', color: css('--blue'), text: `Papel ${t.model}` });
+    if (t.exitT) ms.push({ time: Math.min(snap(t.exitT), maxT), position: long ? 'aboveBar' : 'belowBar', shape: 'square', color: t.r > 0 ? css('--green') : css('--red'), text: `${t.r > 0 ? '+' : ''}${t.r.toFixed(1)}R papel` });
+  }
+  return ms;
+}
+
+function setJournalLines() {
+  for (const l of jrLines) candles.removePriceLine(l);
+  jrLines = [];
+  for (const t of S.journal) {
+    if (t.exitT || t.coin !== S.sym.coin) continue;
+    jrLines.push(candles.createPriceLine({ price: t.entry, color: css('--blue'), lineWidth: 2, lineStyle: LineStyle.Solid, title: 'Papel' }));
+    jrLines.push(candles.createPriceLine({ price: t.stop, color: css('--red'), lineWidth: 2, lineStyle: LineStyle.Solid, title: 'Stop papel' }));
+    jrLines.push(candles.createPriceLine({ price: t.tp, color: css('--green'), lineWidth: 2, lineStyle: LineStyle.Solid, title: 'Obj. papel' }));
+  }
+}
+
 function setStatus(kind, text) {
   $('#status').dataset.kind = kind;
   $('#status-text').textContent = text;
@@ -563,6 +820,17 @@ async function reloadFlow() {
   recompute(true);
 }
 
+// Con la pestaña en segundo plano (móvil bloqueado) el navegador congela el WebSocket sin cerrarlo:
+// esos minutos quedarían como "cubiertos en vivo" pero vacíos. Al volver, se recarga todo
+// (la grabación del servidor rellena el hueco).
+let hiddenAt = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (hiddenAt && Date.now() - hiddenAt > 20000) { load(); loadJournal(); }
+  hiddenAt = null;
+});
+
 buildControls();
 buildSettings();
+buildJournal();
 load();

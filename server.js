@@ -86,6 +86,7 @@ app.use('/bertrader', bertraderRouter({
   cookieSecret: process.env.BERTRADER_COOKIE_SECRET || '',
   pageDir: path.join(__dirname, 'private', 'bertrader'),
   dataDir: path.join(__dirname, 'data', 'bertrader'),
+  journalDir: process.env.JOURNAL_DIR || path.join(__dirname, 'journal'),
 }));
 
 // Fabio Model: order flow por minuto que graba hl_recorder (stack/bertrader/recorder),

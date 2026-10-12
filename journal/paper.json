@@ -1,0 +1,25 @@
+[
+ {
+  "id": "8d2d1cb2-97ba-4299-98f0-a8dd9010b5df",
+  "coin": "xyz:XYZ100",
+  "model": "M2",
+  "side": "L",
+  "entry": 30803,
+  "stop": 30757,
+  "tp": 30862.5,
+  "entryT": 1791812364,
+  "estado": "Balance, esta en la zona baja, en el val. Con el pc subiendo.",
+  "localizacion": "Toque del val.",
+  "agresion": "Varias burbujas compradoras.",
+  "riskUsd": 10,
+  "qty": 0.21739130434782608,
+  "costBps": 4.5,
+  "exitT": null,
+  "exitPx": null,
+  "exitReason": null,
+  "r": null,
+  "followed": null,
+  "note": "",
+  "createdAt": "2026-10-12T13:39:25.602Z"
+ }
+]

@@ -24,7 +24,7 @@ function cookieValue(cookieSecret) {
   return crypto.createHmac('sha256', String(cookieSecret)).update('bertrader-cookie-v1').digest('hex');
 }
 
-function bertraderRouter({ key, cookieSecret, pageDir, dataDir }) {
+function bertraderRouter({ key, cookieSecret, pageDir, dataDir, journalDir }) {
   const router = express.Router();
   const notFound = (res) => res.status(404).type('text/plain').send('Not found');
   const setCookie = (res) => res.cookie(COOKIE, cookieValue(cookieSecret), {
@@ -64,6 +64,7 @@ function bertraderRouter({ key, cookieSecret, pageDir, dataDir }) {
     setCookie(res);
     res.sendFile(path.join(pageDir, 'index.html'), { cacheControl: false });
   });
+  if (journalDir) router.use('/journal', require('./journal').journalRouter({ dir: journalDir }));
   router.get('/data.json', sendData('data.json', 'application/json'));
   router.get('/manana.json', sendData('manana.json', 'application/json'));
   router.get('/termometro.json', sendData('termometro.json', 'application/json'));

@@ -108,6 +108,29 @@
     .prose ul { padding-left: 18px; }
     .prose strong { color: var(--text); }
 
+    .jr-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 16px; }
+    .jr-form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+    .jr-form input[type="number"], .jr-form select { width: 100%; }
+    .jr-form textarea { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 8px; font: inherit; font-size: 13px; min-height: 54px; resize: vertical; }
+    .jr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .jr-chips button, .jr-btn { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); border-radius: 6px;
+      padding: 3px 8px; font: inherit; font-size: 12px; cursor: pointer; }
+    .jr-chips button:hover, .jr-btn:hover { color: var(--text); }
+    .jr-go { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .jr-go button.primary { background: var(--yellow); color: #111; border: 0; border-radius: 8px; padding: 9px 18px; font: inherit; font-weight: 650; cursor: pointer; }
+    .jr-go button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    #jr-calc { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+    #jr-msg { font-size: 12.5px; }
+    #jr-msg[data-kind="error"] { color: var(--red); }
+    #jr-msg[data-kind="ok"] { color: var(--green); }
+    .jr-open { margin-top: 14px; display: grid; gap: 8px; }
+    .jr-open .row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; border: 1px solid rgba(255, 209, 102, 0.35);
+      border-radius: 8px; padding: 8px 12px; font-family: var(--mono); font-size: 12.5px; }
+    .jr-sum { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin: 14px 0 6px; }
+    #jr-closed td.motivo { white-space: normal; text-align: left; min-width: 260px; color: var(--muted); font-family: ui-sans-serif, system-ui; font-size: 12px; }
+    #jr-closed input[type="text"] { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; font: inherit; font-size: 12px; width: 160px; }
+
     @media (max-width: 640px) {
       .chart-wrap { height: 72vh; }
       .legend { font-size: 11px; gap: 8px; }
@@ -175,8 +198,62 @@
       </section>
     </div>
 
+
+    <section class="card" id="journal" style="margin-top:14px">
+      <h2>Diario en papel · sesión en vivo</h2>
+      <p class="note" id="jr-locked" hidden>El diario solo funciona en un dispositivo dado de alta en /bertrader (la misma cookie). Ábrelo desde ese navegador.</p>
+      <div id="jr-body">
+        <form class="jr-form" id="jr-form" autocomplete="off">
+          <label>Modelo
+            <select id="jr-model">
+              <option value="M2">M2 · reversión (Londres)</option>
+              <option value="M1">M1 · tendencia (NY)</option>
+              <option value="Creamer">Creamer</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </label>
+          <label>Lado
+            <span class="seg" id="jr-side"><button type="button" data-side="L" aria-pressed="true">Largo</button><button type="button" data-side="S" aria-pressed="false">Corto</button></span>
+          </label>
+          <label>Stop
+            <input type="number" id="jr-stop" step="any" required>
+            <span class="jr-chips"><button type="button" id="jr-stop-bar">Tras la última vela cerrada</button></span>
+          </label>
+          <label>Objetivo
+            <input type="number" id="jr-tp" step="any" required>
+            <span class="jr-chips" id="jr-tp-chips">
+              <button type="button" data-lvl="poc">POC prev</button><button type="button" data-lvl="vah">VAH</button><button type="button" data-lvl="val">VAL</button><button type="button" data-lvl="high">Máx prev</button><button type="button" data-lvl="low">Mín prev</button>
+            </span>
+          </label>
+          <label>1 · Estado (¿balance o desequilibrio? ¿dónde está respecto al valor de ayer?)
+            <textarea id="jr-estado" required placeholder="Ej.: abrió dentro del valor, Londres barrió el VAL y volvió a entrar → balance, busco reversión"></textarea>
+          </label>
+          <label>2 · Localización (¿en qué nivel exacto entro y por qué ahí?)
+            <textarea id="jr-loc" required placeholder="Ej.: retest del VAL 30.540 desde dentro, segundo toque, LVN justo debajo"></textarea>
+          </label>
+          <label>3 · Agresión (¿qué hizo el order flow en el nivel?)
+            <textarea id="jr-agr" required placeholder="Ej.: burbuja compradora de 80k en el VAL, vela llena verde, CVD girando arriba"></textarea>
+          </label>
+        </form>
+        <div class="jr-go">
+          <button class="primary" id="jr-enter" type="button">Entrar en papel</button>
+          <span id="jr-calc">—</span>
+          <span id="jr-msg"></span>
+        </div>
+        <div class="jr-open" id="jr-open"></div>
+        <p class="jr-sum" id="jr-sum"></p>
+        <div class="scroll">
+          <table id="jr-closed">
+            <thead><tr><th>Entrada (NY · Brisbane)</th><th>Mercado</th><th>Modelo</th><th>Lado</th><th>Precio</th><th>Stop</th><th>Objetivo</th><th>Salida</th><th>R</th><th>¿Seguí el modelo?</th><th>Nota</th><th>Motivo</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note">Riesgo fijo de 10 $ de papel por operación (1 R), comisión de 4,5 pb por lado incluida, como el motor. La salida se resuelve sola con los trades en vivo y, si cierras la página, con las velas de 1m de Hyperliquid (si una vela toca stop y objetivo, cuenta el stop). Al acabar la sesión: <b>/sesion</b> en @Bbia_bBot.</p>
+      </div>
+    </section>
+
     <section class="card" style="margin-top:14px">
-      <h2>Operaciones (hora NY)</h2>
+      <h2>Operaciones del motor (hora NY)</h2>
       <div class="scroll">
         <table id="trades">
           <thead><tr><th>Entrada</th><th>Modelo</th><th>Lado</th><th>Precio</th><th>Stop</th><th>Objetivo</th><th>Salida</th><th>Motivo</th><th>R</th></tr></thead>
